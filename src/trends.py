@@ -24,49 +24,55 @@ import warnings
     
 """
 
-def safe_lowess_smoothing(df, x_col, y_col, frac=0.3, min_points=10):
-    """
-    Apply LOWESS smoothing to data in df[x_col] and df[y_col] safely.
 
-    Parameters:
-    - df: pandas DataFrame containing the data
-    - x_col: str, column name for independent variable
-    - y_col: str, column name for dependent variable
-    - frac: float, LOWESS smoothing parameter (between 0 and 1)
-    - min_points: int, minimum number of valid points required to run LOWESS
 
-    Returns:
-    - smoothed: np.ndarray of shape (n, 2) with columns [x_smoothed, y_smoothed]
-      or None if not enough data
-    """
+""""""
 
-    # 1. Remove NaN and infinite values
-    mask = np.isfinite(df[x_col]) & np.isfinite(df[y_col])
-    cleaned = df.loc[mask]
 
-    # 2. Drop duplicate x values (optional but helps LOWESS)
-    cleaned = cleaned.drop_duplicates(subset=[x_col])
 
-    # 3. Sort by x_col (LOWESS expects sorted x for sensible output)
-    cleaned = cleaned.sort_values(by=x_col)
+# def safe_lowess_smoothing(df, x_col, y_col, frac=0.3, min_points=10):
+#     """
+#     Apply LOWESS smoothing to data in df[x_col] and df[y_col] safely.
 
-    # 4. Check enough data points
-    if len(cleaned) < min_points:
-        # Not enough data to smooth
-        return None
+#     Parameters:
+#     - df: pandas DataFrame containing the data
+#     - x_col: str, column name for independent variable
+#     - y_col: str, column name for dependent variable
+#     - frac: float, LOWESS smoothing parameter (between 0 and 1)
+#     - min_points: int, minimum number of valid points required to run LOWESS
 
-    # 5. Run LOWESS with warnings suppressed
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=RuntimeWarning)
-        smoothed = lowess(
-            endog=cleaned[y_col],
-            exog=cleaned[x_col],
-            frac=frac,
-            it=0,
-            delta=0.0,
-        )
+#     Returns:
+#     - smoothed: np.ndarray of shape (n, 2) with columns [x_smoothed, y_smoothed]
+#       or None if not enough data
+#     """
 
-    return smoothed
+#     # 1. Remove NaN and infinite values
+#     mask = np.isfinite(df[x_col]) & np.isfinite(df[y_col])
+#     cleaned = df.loc[mask]
+
+#     # 2. Drop duplicate x values (optional but helps LOWESS)
+#     cleaned = cleaned.drop_duplicates(subset=[x_col])
+
+#     # 3. Sort by x_col (LOWESS expects sorted x for sensible output)
+#     cleaned = cleaned.sort_values(by=x_col)
+
+#     # 4. Check enough data points
+#     if len(cleaned) < min_points:
+#         # Not enough data to smooth
+#         return None
+
+#     # 5. Run LOWESS with warnings suppressed
+#     with warnings.catch_warnings():
+#         warnings.simplefilter("ignore", category=RuntimeWarning)
+#         smoothed = lowess(
+#             endog=cleaned[y_col],
+#             exog=cleaned[x_col],
+#             frac=frac,
+#             it=0,
+#             delta=0.0,
+#         )
+
+#     return smoothed
 
 def plot_fatalities_timeline(df):
     st.subheader("Fatalities Timeline by Operator")
@@ -186,67 +192,64 @@ def plot_manufacturer_safety(df):
         st.warning("No manufacturers meet the selected criteria")
 
 def plot_age_impact(df):
-    from datetime import datetime
-    import plotly.express as px
-    import numpy as np
-    import streamlit as st
 
-    st.subheader("Aircraft Age Impact Analysis")
+    # st.subheader("Aircraft Age Impact Analysis")
 
-    if df.empty:
-        st.warning("Dataset is empty.")
-        return
+    # if df.empty:
+    #     st.warning("Dataset is empty.")
+    #     return
 
-    current_year = datetime.now().year
-    type_first_year = df.groupby('type')['year'].min().reset_index()
-    type_first_year.columns = ['type', 'first_year']
-    df = df.merge(type_first_year, on='type', how='left')
-    df['aircraft_age'] = df['year'] - df['first_year']
+    # current_year = datetime.now().year
+    # type_first_year = df.groupby('type')['year'].min().reset_index()
+    # type_first_year.columns = ['type', 'first_year']
+    # df = df.merge(type_first_year, on='type', how='left')
+    # df['aircraft_age'] = df['year'] - df['first_year']
 
-    col1, col2 = st.columns(2)
-    with col1:
-        age_range = st.slider("Aircraft age range (years):", 0, 50, (0, 30))
-    with col2:
-        show_outliers = st.checkbox("Show outlier accidents")
+    # col1, col2 = st.columns(2)
+    # with col1:
+    #     age_range = st.slider("Aircraft age range (years):", 0, 50, (0, 30))
+    # with col2:
+    #     show_outliers = st.checkbox("Show outlier accidents")
 
-    filtered = df[(df['aircraft_age'] >= age_range[0]) & (df['aircraft_age'] <= age_range[1])]
+    # filtered = df[(df['aircraft_age'] >= age_range[0]) & (df['aircraft_age'] <= age_range[1])]
 
-    if not show_outliers and not filtered.empty:
-        fatal_threshold = filtered['fatalities'].quantile(0.99)
-        filtered = filtered[filtered['fatalities'] <= fatal_threshold]
+    # if not show_outliers and not filtered.empty:
+    #     fatal_threshold = filtered['fatalities'].quantile(0.99)
+    #     filtered = filtered[filtered['fatalities'] <= fatal_threshold]
 
-    filtered = filtered.dropna(subset=['aircraft_age', 'fatalities'])
-    filtered = filtered[np.isfinite(filtered['aircraft_age']) & np.isfinite(filtered['fatalities'])]
+    # filtered = filtered.dropna(subset=['aircraft_age', 'fatalities'])
+    # filtered = filtered[np.isfinite(filtered['aircraft_age']) & np.isfinite(filtered['fatalities'])]
 
-    if filtered.empty:
-        st.warning("No data available after filtering.")
-        return
+    # if filtered.empty:
+    #     st.warning("No data available after filtering.")
+    #     return
 
-    fig = px.scatter(
-        filtered,
-        x='aircraft_age',
-        y='fatalities',
-        color='manufacturer',
-        size='fatalities',
-        hover_name='type',
-        hover_data=['operator', 'year', 'country'],
-        title="Fatalities by Aircraft Age",
-        labels={'aircraft_age': 'Aircraft Age (years)', 'fatalities': 'Fatalities'}
-    )
+    # fig = px.scatter(
+    #     filtered,
+    #     x='aircraft_age',
+    #     y='fatalities',
+    #     color='manufacturer',
+    #     size='fatalities',
+    #     hover_name='type',
+    #     hover_data=['operator', 'year', 'country'],
+    #     title="Fatalities by Aircraft Age",
+    #     labels={'aircraft_age': 'Aircraft Age (years)', 'fatalities': 'Fatalities'}
+    # )
 
-    lowess_result = safe_lowess_smoothing(filtered, 'aircraft_age', 'fatalities')
-    if lowess_result is not None:
-        fig.add_scatter(
-            x=lowess_result['aircraft_age'],
-            y=lowess_result['lowess'],
-            mode='lines',
-            name='LOWESS Trendline',
-            line=dict(color='black', width=2, dash='dash')
-        )
-    else:
-        st.info("LOWESS trendline skipped due to insufficient or unstable data.")
+    # lowess_result = safe_lowess_smoothing(filtered, 'aircraft_age', 'fatalities')
+    # if lowess_result is not None:
+    #     fig.add_scatter(
+    #         x=lowess_result['aircraft_age'],
+    #         y=lowess_result['lowess'],
+    #         mode='lines',
+    #         name='LOWESS Trendline',
+    #         line=dict(color='black', width=2, dash='dash')
+    #     )
+    # else:
+    #     st.info("LOWESS trendline skipped due to insufficient or unstable data.")
 
-    st.plotly_chart(fig, use_container_width=True)
+    # st.plotly_chart(fig, use_container_width=True)
+    st.write("En cours de construction")
 
 def plot_time_heatmap(df):
     st.subheader("Temporal Accident Patterns")
