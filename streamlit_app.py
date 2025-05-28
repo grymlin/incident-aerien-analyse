@@ -90,101 +90,94 @@ st.markdown(app_description_fr)
 st.markdown(app_description_en)
 st.markdown("\n\n")
 
-# Data loading and filtering
-df = load_data()
-df = clean_data(df)
-df = add_columns(df)
+try:
+    df = load_data()
+    df = clean_data(df)
+    df = add_columns(df)
+except Exception as e:
+    st.error(f"Error while loading or cleaning data: {e}")
+    st.stop()
 
-# Sidebar filters
-st.sidebar.header("Filter Options")
-manufacturer_filter = st.sidebar.multiselect(
-    "Manufacturer", options=sorted(df['manufacturer'].dropna().unique())
-)
+# Filtres avec gestion d'erreur
+try:
+    st.sidebar.header("Filter Options")
+    manufacturer_filter = st.sidebar.multiselect("Manufacturer", sorted(df['manufacturer'].dropna().unique()))
+    df_filtered_manufacturer = df[df['manufacturer'].isin(manufacturer_filter)] if manufacturer_filter else df.copy()
 
-# Filter logic (unchanged from your original)
-if manufacturer_filter:
-    df_filtered_manufacturer = df[df['manufacturer'].isin(manufacturer_filter)]
-else:
-    df_filtered_manufacturer = df.copy()
+    aircraft_model_options = sorted(df_filtered_manufacturer['aircraft_model'].dropna().unique())
+    aircraft_model_filter = st.sidebar.multiselect("Aircraft Model", options=aircraft_model_options)
+    df_filtered_model = df_filtered_manufacturer[df_filtered_manufacturer['aircraft_model'].isin(aircraft_model_filter)] if aircraft_model_filter else df_filtered_manufacturer.copy()
 
-aircraft_model_options = sorted(df_filtered_manufacturer['aircraft_model'].dropna().unique())
-aircraft_model_filter = st.sidebar.multiselect(
-    "Aircraft Model", options=aircraft_model_options
-)
+    type_options = sorted(df_filtered_model['type'].dropna().unique())
+    type_filter = st.sidebar.multiselect("Aircraft Type", options=type_options)
 
-if aircraft_model_filter:
-    df_filtered_model = df_filtered_manufacturer[df_filtered_manufacturer['aircraft_model'].isin(aircraft_model_filter)]
-else:
-    df_filtered_model = df_filtered_manufacturer.copy()
+    year_filter = st.sidebar.multiselect("Year", sorted(df['year'].dropna().astype(int).unique()))
+    operator_filter = st.sidebar.multiselect("Operator", sorted(df['operator'].dropna().unique()))
+    country_filter = st.sidebar.multiselect("Country", sorted(df['country'].dropna().unique()))
+    cat_filter = st.sidebar.multiselect("Accident Category", sorted(df['cat'].dropna().unique()))
 
-type_options = sorted(df_filtered_model['type'].dropna().unique())
-type_filter = st.sidebar.multiselect("Aircraft Type", options=type_options)
+    filtered_df = df.copy()
+    if year_filter: filtered_df = filtered_df[filtered_df['year'].isin(year_filter)]
+    if manufacturer_filter: filtered_df = filtered_df[filtered_df['manufacturer'].isin(manufacturer_filter)]
+    if aircraft_model_filter: filtered_df = filtered_df[filtered_df['aircraft_model'].isin(aircraft_model_filter)]
+    if type_filter: filtered_df = filtered_df[filtered_df['type'].isin(type_filter)]
+    if operator_filter: filtered_df = filtered_df[filtered_df['operator'].isin(operator_filter)]
+    if country_filter: filtered_df = filtered_df[filtered_df['country'].isin(country_filter)]
+    if cat_filter: filtered_df = filtered_df[filtered_df['cat'].isin(cat_filter)]
+except Exception as e:
+    st.error(f"Error while applying filters: {e}")
+    st.stop()
 
-# Other filters
-year_filter = st.sidebar.multiselect("Year", options=sorted(df['year'].dropna().astype(int).unique()))
-operator_filter = st.sidebar.multiselect("Operator", options=sorted(df['operator'].dropna().unique()))
-country_filter = st.sidebar.multiselect("Country", options=sorted(df['country'].dropna().unique()))
-cat_filter = st.sidebar.multiselect("Accident Category", options=sorted(df['cat'].dropna().unique()))
+# Préparation des données pour visualisation
+try:
+    df_clean = clean_fatalities_data(filtered_df)
+except Exception as e:
+    st.error(f"Error while preparing fatalities data: {e}")
+    df_clean = filtered_df.copy()
 
-# Apply filters
-filtered_df = df.copy()
-if year_filter:
-    filtered_df = filtered_df[filtered_df['year'].isin(year_filter)]
-if manufacturer_filter:
-    filtered_df = filtered_df[filtered_df['manufacturer'].isin(manufacturer_filter)]
-if aircraft_model_filter:
-    filtered_df = filtered_df[filtered_df['aircraft_model'].isin(aircraft_model_filter)]
-if type_filter:
-    filtered_df = filtered_df[filtered_df['type'].isin(type_filter)]
-if operator_filter:
-    filtered_df = filtered_df[filtered_df['operator'].isin(operator_filter)]
-if country_filter:
-    filtered_df = filtered_df[filtered_df['country'].isin(country_filter)]
-if cat_filter:
-    filtered_df = filtered_df[filtered_df['cat'].isin(cat_filter)]
-
-# Main tabs
-
-tab_trends,tab_safety,tab_geo=st.tabs([
+# Tabs et visualisations
+tab_trends, tab_safety, tab_geo = st.tabs([
     "Accident Trends & Patterns",
     "Aircraft Family Safety",
     "Geographic Analysis"
 ])
 
-df_clean = clean_fatalities_data(filtered_df)
-
 with tab_trends:
     st.header("Accident Trends & Patterns")
-    
-    with st.expander("Filtered Dataframe"):
-        st.dataframe(df_clean)
-    
-    plot_fatalities_timeline(df_clean)
-    plot_accident_categories(df_clean)
-    plot_manufacturer_safety(df_clean)
-    plot_age_impact(df_clean)
-    plot_time_heatmap(df_clean)
-    get_download_section(df, df_clean)  
+    try:
+        with st.expander("Filtered Dataframe"):
+            st.dataframe(df_clean)
+
+        plot_fatalities_timeline(df_clean)
+        plot_accident_categories(df_clean)
+        plot_manufacturer_safety(df_clean)
+        plot_age_impact(df_clean)
+        plot_time_heatmap(df_clean)
+        get_download_section(df, df_clean)
+    except Exception as e:
+        st.error(f"Error in trend visualizations: {e}")
 
 with tab_safety:
-    aircraft_family_analysis_page(filtered_df)
+    try:
+        aircraft_family_analysis_page(filtered_df)
+    except Exception as e:
+        st.error(f"Error in aircraft family safety page: {e}")
 
 with tab_geo:
     st.subheader("Accident Geographic Distribution")
-    
-    if {'latitude', 'longitude'}.issubset(df_clean.columns):
-        col_map, col_stats = st.columns([3,1])
-        with col_map:
-            st.map(df_clean[['latitude', 'longitude']].dropna(),
-                zoom=1, use_container_width=True)
-        with col_stats:
-            st.metric("Countries with Most Accidents", 
-                     df_clean['country'].value_counts().index[0])
-            st.metric("Highest Risk Region", 
-                     df_clean['region'].value_counts().index[0])
-    else:
-        st.info("Geographic analysis not available yet")
-
+    try:
+        if {'latitude', 'longitude'}.issubset(df_clean.columns):
+            col_map, col_stats = st.columns([3, 1])
+            with col_map:
+                st.map(df_clean[['latitude', 'longitude']].dropna(), zoom=1, use_container_width=True)
+            with col_stats:
+                st.metric("Countries with Most Accidents", df_clean['country'].value_counts().index[0])
+                st.metric("Highest Risk Region", df_clean['region'].value_counts().index[0])
+        else:
+            st.info("Geographic analysis not available yet")
+    except Exception as e:
+        st.error(f"Error in geographic analysis: {e}")
+        
 def add_footer():
     """Professional footer with GitHub CV link"""
     current_year = datetime.now().year
