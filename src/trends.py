@@ -9,7 +9,6 @@ import pandas as pd
 from datetime import datetime
 import io
 from pyxlsb import open_workbook
-import xlsxwriter  # For Excel export
 
 """
     Creation and modification:
