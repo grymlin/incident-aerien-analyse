@@ -236,6 +236,15 @@ def aircraft_family_analysis_page(df):
     Identifies groups of aircraft with similar naming patterns **and** accident characteristics,
     helping detect potential design or maintenance issues.
     """)
+    if len(df) > 10000:  # Adjust threshold based on your expected size
+        raise ValueError("Dataset too large for cloud processing")
+    
+    # Explicitly reduce memory usage
+    df = df.copy()
+    for col in df.select_dtypes(include=['float']):
+        df[col] = pd.to_numeric(df[col], downcast='float')
+    for col in df.select_dtypes(include=['integer']):
+        df[col] = pd.to_numeric(df[col], downcast='integer')
     
     with st.expander("Analysis Methodology"):
         st.markdown("""
