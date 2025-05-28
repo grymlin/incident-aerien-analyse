@@ -8,6 +8,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import io
+import numpy as np
 from pyxlsb import open_workbook
 import warnings
 
@@ -142,11 +143,15 @@ def plot_manufacturer_safety(df):
 def plot_age_impact(df):
     st.subheader("Aircraft Age Impact Analysis")
     
-    # Calculate age (current year - first appearance year of type)
+    if df.empty:
+        st.warning("Dataset is empty.")
+        return
+    
+    # Calculate aircraft age based on first appearance year of the type
     current_year = datetime.now().year
     type_first_year = df.groupby('type')['year'].min().reset_index()
     type_first_year.columns = ['type', 'first_year']
-    df = df.merge(type_first_year, on='type')
+    df = df.merge(type_first_year, on='type', how='left')
     df['aircraft_age'] = df['year'] - df['first_year']
     
     # Interactive controls
@@ -161,26 +166,49 @@ def plot_age_impact(df):
     with col2:
         show_outliers = st.checkbox("Show outlier accidents")
     
-    filtered = df[(df['aircraft_age'] >= age_range[0]) & 
-                 (df['aircraft_age'] <= age_range[1])]
+    # Filter data based on selected age range
+    filtered = df[(df['aircraft_age'] >= age_range[0]) & (df['aircraft_age'] <= age_range[1])]
     
-    if not show_outliers:
-        # Remove top 1% of fatalities as outliers
+    # Remove outliers if checkbox unchecked
+    if not show_outliers and not filtered.empty:
         fatal_threshold = filtered['fatalities'].quantile(0.99)
         filtered = filtered[filtered['fatalities'] <= fatal_threshold]
     
-    fig = px.scatter(
-        filtered,
-        x='aircraft_age',
-        y='fatalities',
-        color='manufacturer',
-        size='fatalities',
-        hover_name='type',
-        hover_data=['operator', 'year', 'country'],
-        trendline="lowess",
-        title="Fatalities by Aircraft Age",
-        labels={'aircraft_age': 'Aircraft Age (years)', 'fatalities': 'Fatalities'}
-    )
+    # Clean data for LOWESS: drop NaNs and infinite values in 'aircraft_age' and 'fatalities'
+    filtered = filtered.dropna(subset=['aircraft_age', 'fatalities'])
+    filtered = filtered[np.isfinite(filtered['aircraft_age']) & np.isfinite(filtered['fatalities'])]
+    
+    # Check data variation to safely apply LOWESS trendline
+    if filtered.empty:
+        st.warning("No data available after filtering.")
+        return
+    
+    if filtered['fatalities'].nunique() < 2 or filtered['aircraft_age'].nunique() < 2:
+        st.warning("Not enough variation in data to compute LOWESS trendline. Displaying scatter plot without trendline.")
+        fig = px.scatter(
+            filtered,
+            x='aircraft_age',
+            y='fatalities',
+            color='manufacturer',
+            size='fatalities',
+            hover_name='type',
+            hover_data=['operator', 'year', 'country'],
+            title="Fatalities by Aircraft Age (Trendline skipped)",
+            labels={'aircraft_age': 'Aircraft Age (years)', 'fatalities': 'Fatalities'}
+        )
+    else:
+        fig = px.scatter(
+            filtered,
+            x='aircraft_age',
+            y='fatalities',
+            color='manufacturer',
+            size='fatalities',
+            hover_name='type',
+            hover_data=['operator', 'year', 'country'],
+            trendline="lowess",
+            title="Fatalities by Aircraft Age",
+            labels={'aircraft_age': 'Aircraft Age (years)', 'fatalities': 'Fatalities'}
+        )
     
     st.plotly_chart(fig, use_container_width=True)
 
