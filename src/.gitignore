@@ -1,0 +1,9 @@
+# Create file and add these lines
+echo ".venv/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+*.csv
+*.jpg
+*.png" > .gitignore
