@@ -193,37 +193,54 @@ def plot_manufacturer_safety(df):
         st.warning("No manufacturers meet the selected criteria")
 
 def plot_age_impact(df):
-
     st.subheader("Aircraft Age Impact Analysis")
-
+    
     if df.empty:
         st.warning("Dataset is empty.")
         return
-
-    current_year = datetime.now().year
+    
+    # Calculate aircraft age based on type's first year in dataset
     type_first_year = df.groupby('type')['year'].min().reset_index()
     type_first_year.columns = ['type', 'first_year']
     df = df.merge(type_first_year, on='type', how='left')
     df['aircraft_age'] = df['year'] - df['first_year']
-
+    
     col1, col2 = st.columns(2)
     with col1:
         age_range = st.slider("Aircraft age range (years):", 0, 50, (0, 30))
     with col2:
         show_outliers = st.checkbox("Show outlier accidents")
-
+    
     filtered = df[(df['aircraft_age'] >= age_range[0]) & (df['aircraft_age'] <= age_range[1])]
-
+    
     if not show_outliers and not filtered.empty:
         fatal_threshold = filtered['fatalities'].quantile(0.99)
         filtered = filtered[filtered['fatalities'] <= fatal_threshold]
-
+    
     filtered = filtered.dropna(subset=['aircraft_age', 'fatalities'])
     filtered = filtered[np.isfinite(filtered['aircraft_age']) & np.isfinite(filtered['fatalities'])]
-
+    
     if filtered.empty:
         st.warning("No data available after filtering.")
         return
+    
+    filtered['aircraft_age'] = filtered['aircraft_age'].astype(float)
+    filtered['fatalities'] = filtered['fatalities'].astype(float)
+    
+    # Bin ages by 3-year intervals
+    filtered['age_bin'] = (filtered['aircraft_age'] // 3) * 3
+    grouped = filtered.groupby('age_bin').agg({'fatalities': 'mean'}).reset_index()
+    grouped = grouped.sort_values(by='age_bin')
+
+    
+    try:
+        grouped['age_bin'] = grouped['age_bin'].astype(float)
+        grouped['fatalities'] = grouped['fatalities'].astype(float)
+
+        smoothed = lowess(grouped['fatalities'], grouped['age_bin'], frac=0.8)
+    except Exception as e:
+        st.error(f"LOWESS failed: {e}")
+        smoothed = None
 
     fig = px.scatter(
         filtered,
@@ -237,20 +254,17 @@ def plot_age_impact(df):
         labels={'aircraft_age': 'Aircraft Age (years)', 'fatalities': 'Fatalities'}
     )
 
-    lowess_result = safe_lowess_smoothing(filtered, 'aircraft_age', 'fatalities')
-    if lowess_result is not None:
-        fig.add_scatter(
-            x=lowess_result['aircraft_age'],
-            y=lowess_result['lowess'],
+    if smoothed is not None:
+        fig.add_trace(go.Scatter(
+            x=smoothed[:,0],
+            y=smoothed[:,1],
             mode='lines',
             name='LOWESS Trendline',
-            line=dict(color='black', width=2, dash='dash')
-        )
-    else:
-        st.info("LOWESS trendline skipped due to insufficient or unstable data.")
+            line=dict(color='red', width=3)
+        ))
 
     st.plotly_chart(fig, use_container_width=True)
-    st.write("En cours de construction")
+    
 
 def plot_time_heatmap(df):
     st.subheader("Temporal Accident Patterns")
