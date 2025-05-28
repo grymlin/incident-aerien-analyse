@@ -6,7 +6,6 @@ import altair as alt
 from datetime import datetime
 import streamlit as st
 import pandas as pd
-import statsmodels
 from datetime import datetime
 import io
 from pyxlsb import open_workbook
