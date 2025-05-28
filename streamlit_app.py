@@ -159,10 +159,10 @@ with tab_trends:
 
 with tab_safety:
     st.write("test")
-    # try:
-    #     aircraft_family_analysis_page(filtered_df)
-    # except Exception as e:
-    #     st.error(f"Error in aircraft family safety page: {e}")
+    try:
+        aircraft_family_analysis_page(filtered_df)
+    except Exception as e:
+        st.error(f"Error in aircraft family safety page: {e}")
 
 with tab_geo:
     st.subheader("Accident Geographic Distribution")
