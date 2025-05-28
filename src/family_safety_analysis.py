@@ -49,7 +49,6 @@ def analyze_aircraft_families(df):
         tfidf_matrix = tfidf.fit_transform(df['type'])
         
         # Cosine similarity matrix and mean similarity per type
-        # Because df can have repeated 'type' entries, compute mean similarity per row
         cosine_sim = cosine_similarity(tfidf_matrix)
         mean_sim = cosine_sim.mean(axis=1)
         
@@ -75,7 +74,6 @@ def analyze_aircraft_families(df):
         return None, None
 
 def plot_family_analysis(df, features):
-    """Visualization with proper column references and actual plots"""
     if df is None or features is None:
         return
     
@@ -262,7 +260,7 @@ def aircraft_family_analysis_page(df):
         
         if selected_family != st.session_state.selected_family:
             st.session_state.selected_family = selected_family
-            st.experimental_rerun()
+            st.experimental_rerun()  # <-- Correct rerun here
         
         if st.session_state.selected_family is not None:
             family_data = result[result['family'] == st.session_state.selected_family]
@@ -300,3 +298,11 @@ def aircraft_family_analysis_page(df):
                 data=family_data.to_csv(index=False),
                 file_name=f"aircraft_family_{st.session_state.selected_family}.csv"
             )
+
+# Optional: run this page if launched directly (with a sample or test dataframe)
+if __name__ == "__main__":
+    # Example usage, replace with your DataFrame loading
+    st.title("Family Safety Analysis App Example")
+    # Load your dataframe here
+    # df = pd.read_csv("your_accident_data.csv")
+    # aircraft_family_analysis_page(df)
