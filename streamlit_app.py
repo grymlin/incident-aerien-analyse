@@ -165,7 +165,6 @@ with tab_safety:
         st.session_state.select_default_manufacturers = True
         st.session_state.first_visit_safety_tab = False
         st.rerun()
-    st.header("Aircraft Family Safety")
     try:
         aircraft_family_analysis_page(filtered_df)
     except Exception as e:
