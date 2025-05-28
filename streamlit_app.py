@@ -8,15 +8,19 @@ import base64
 from pathlib import Path
 from datetime import datetime
 
-
 st.set_page_config(
     page_title="Aviation Accident Dashboard",
     page_icon="✈️",
     layout="wide"
 )
 
+# Session state flags
+if "first_visit_safety_tab" not in st.session_state:
+    st.session_state.first_visit_safety_tab = True
+if "select_default_manufacturers" not in st.session_state:
+    st.session_state.select_default_manufacturers = False
+
 def add_aviation_header():
-    """Fixed header with proper image positioning"""
     try:
         img_path = "images/sky_header.jpg"
         img_bytes = Path(img_path).read_bytes()
@@ -36,18 +40,14 @@ def add_aviation_header():
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
-                    object-position: center 70%;  /* Adjust this to show the plane */
+                    object-position: center 70%;
                 }}
                 .header-overlay {{
                     position: absolute;
                     bottom: 0;
                     left: 0;
                     right: 0;
-                    background: linear-gradient(
-                        to top, 
-                        rgba(0,0,0,0.7) 0%, 
-                        transparent 100%
-                    );
+                    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
                     padding: 2rem;
                     color: white;
                 }}
@@ -71,25 +71,21 @@ def add_aviation_header():
         st.warning("Header image not found - using simple header")
         st.title("Aviation Safety Intelligence")
 
-
-add_aviation_header()  # Add header first
+add_aviation_header()
 
 # App descriptions
-app_description_fr = """
+st.markdown("""
 Cette application interactive permet d'explorer et d'analyser les données d'accidents aéronautiques,
 afin de mieux comprendre les tendances et améliorer la sécurité aérienne.
-"""
-
-app_description_en = """
+""")
+st.markdown("""
 This interactive application allows you to explore and analyze aviation accident data. 
 It provides dynamic visualizations to identify accident patterns
 , helping to better understand trends and enhance aviation safety.
-"""
-
-st.markdown(app_description_fr)
-st.markdown(app_description_en)
+""")
 st.markdown("\n\n")
 
+# Chargement des données
 try:
     df = load_data()
     df = clean_data(df)
@@ -98,10 +94,17 @@ except Exception as e:
     st.error(f"Error while loading or cleaning data: {e}")
     st.stop()
 
-# Filtres avec gestion d'erreur
+# Filtres avec valeurs par défaut pour certains fabricants
 try:
     st.sidebar.header("Filter Options")
-    manufacturer_filter = st.sidebar.multiselect("Manufacturer", sorted(df['manufacturer'].dropna().unique()))
+    default_manufacturers = ["A.W", "ATL"]
+
+    manufacturer_filter = st.sidebar.multiselect(
+        "Manufacturer",
+        sorted(df['manufacturer'].dropna().unique()),
+        default=default_manufacturers if st.session_state.select_default_manufacturers else []
+    )
+
     df_filtered_manufacturer = df[df['manufacturer'].isin(manufacturer_filter)] if manufacturer_filter else df.copy()
 
     aircraft_model_options = sorted(df_filtered_manufacturer['aircraft_model'].dropna().unique())
@@ -128,14 +131,14 @@ except Exception as e:
     st.error(f"Error while applying filters: {e}")
     st.stop()
 
-# Préparation des données pour visualisation
+# Préparation des données
 try:
     df_clean = clean_fatalities_data(filtered_df)
 except Exception as e:
     st.error(f"Error while preparing fatalities data: {e}")
     df_clean = filtered_df.copy()
 
-# Tabs et visualisations
+# Tabs
 tab_trends, tab_safety, tab_geo = st.tabs([
     "Accident Trends & Patterns",
     "Aircraft Family Safety",
@@ -158,7 +161,11 @@ with tab_trends:
         st.error(f"Error in trend visualizations: {e}")
 
 with tab_safety:
-    st.write("test")
+    if st.session_state.first_visit_safety_tab:
+        st.session_state.select_default_manufacturers = True
+        st.session_state.first_visit_safety_tab = False
+        st.rerun()
+    st.header("Aircraft Family Safety")
     try:
         aircraft_family_analysis_page(filtered_df)
     except Exception as e:
@@ -180,9 +187,7 @@ with tab_geo:
         st.error(f"Error in geographic analysis: {e}")
 
 def add_footer():
-    """Professional footer with GitHub CV link"""
     current_year = datetime.now().year
-    
     st.markdown(
         f"""
         <style>
@@ -239,5 +244,5 @@ def add_footer():
         """,
         unsafe_allow_html=True
     )
-add_footer()
 
+add_footer()
