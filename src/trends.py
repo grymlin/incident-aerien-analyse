@@ -11,6 +11,7 @@ import io
 import numpy as np
 from pyxlsb import open_workbook
 import warnings
+from statsmodels.nonparametric.smoothers_lowess import lowess
 
 
 """
