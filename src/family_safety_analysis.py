@@ -236,7 +236,7 @@ def aircraft_family_analysis_page(df):
     Identifies groups of aircraft with similar naming patterns **and** accident characteristics,
     helping detect potential design or maintenance issues.
     """)
-    if len(df) > 10000:  # Adjust threshold based on your expected size
+    if len(df) > 10000  # Adjust threshold based on your expected size
         raise ValueError("Dataset too large for cloud processing - Please select some filters")
     
     # Explicitly reduce memory usage
