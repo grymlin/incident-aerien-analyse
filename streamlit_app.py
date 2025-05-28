@@ -14,8 +14,6 @@ st.set_page_config(
     page_icon="✈️",
     layout="wide"
 )
-import warnings
-warnings.filterwarnings("ignore", category=RuntimeWarning, message="invalid value encountered in divide")
 
 def add_aviation_header():
     """Fixed header with proper image positioning"""
