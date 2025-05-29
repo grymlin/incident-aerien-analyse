@@ -61,7 +61,7 @@ def add_aviation_header():
             <div class="header-container">
                 <img class="header-image" src="data:image/jpeg;base64,{img_base64}" alt="Aviation header">
                 <div class="header-overlay">
-                    <h1 class="header-title">Aviation Safety Intelligence</h1>
+                    <h1 class="header-title">Aviation Safety Analysis</h1>
                 </div>
             </div>
             """,
@@ -69,7 +69,7 @@ def add_aviation_header():
         )
     except FileNotFoundError:
         st.warning("Header image not found - using simple header")
-        st.title("Aviation Safety Intelligence")
+        st.title("Aviation Safety Analysis")
 
 add_aviation_header()
 
