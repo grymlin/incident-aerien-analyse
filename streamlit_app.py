@@ -4,6 +4,7 @@ from src.trends import plot_fatalities_timeline, plot_accident_categories, plot_
 from src.trends import get_download_section
 from src.data_processing import load_data, clean_data, clean_fatalities_data, add_columns
 from src.family_safety_analysis import aircraft_family_analysis_page
+from src.geo_analysis import display_geo_analysis
 import base64
 from pathlib import Path
 from datetime import datetime
@@ -171,19 +172,7 @@ with tab_safety:
         st.error(f"Error in aircraft family safety page: {e}")
 
 with tab_geo:
-    st.subheader("Accident Geographic Distribution")
-    try:
-        if {'latitude', 'longitude'}.issubset(df_clean.columns):
-            col_map, col_stats = st.columns([3, 1])
-            with col_map:
-                st.map(df_clean[['latitude', 'longitude']].dropna(), zoom=1, use_container_width=True)
-            with col_stats:
-                st.metric("Countries with Most Accidents", df_clean['country'].value_counts().index[0])
-                st.metric("Highest Risk Region", df_clean['region'].value_counts().index[0])
-        else:
-            st.info("Geographic analysis not available yet")
-    except Exception as e:
-        st.error(f"Error in geographic analysis: {e}")
+    display_geo_analysis(df_clean)
 
 def add_footer():
     current_year = datetime.now().year

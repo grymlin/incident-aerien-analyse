@@ -1,367 +1,776 @@
-# family_safety_analysis.py 
+# aircraft_family_analysis.py - Tailored for Historical Aircraft Data
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import DBSCAN, KMeans
 from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import streamlit as st
 import seaborn as sns
 import pandas as pd
 import altair as alt
+import re
+from datetime import datetime
 
 """
-    Creation and modification:
-    Creation date               : 28/05/2025
-
-    Creation date               : 28/05/2025
-
-    @author                     : Rym Otsmane
-
+Aircraft Family Analysis optimized for historical aircraft data
+with better pattern recognition for vintage and classic aircraft
 """
 
-def analyze_aircraft_families(df):
-    """Enhanced aircraft family analysis with proper column creation"""
-    # Data validation
-    required_cols = ['type', 'fatalities', 'year', 'operator', 'cat']
-    if not all(col in df.columns for col in required_cols):
-        st.warning("Missing required columns for analysis")
-        return None, None
+def extract_aircraft_features(df):
+    """Extract meaningful aircraft characteristics for family grouping"""
+    df = df.copy()
     
-    # Clean and prepare data
-    df = df.dropna(subset=['type']).copy()
-    df['manufacturer'] = df['type'].str.extract(r'^([A-Za-z]+)')[0]
+    # 1. Enhanced manufacturer extraction for historical aircraft
+    def extract_manufacturer(aircraft_type):
+        aircraft_type = str(aircraft_type).upper()
+        
+        # Historical manufacturers mapping
+        manufacturer_patterns = {
+            'DOUGLAS': ['DOUGLAS', 'DC-', 'DST-', 'C-47', 'C-53', 'C-54', 'R4D', 'R5D'],
+            'BOEING': ['BOEING', 'B-', '707-', '727-', '737-', '747-', '757-', '767-', '777-', '787-'],
+            'LOCKHEED': ['LOCKHEED', 'L-', 'C-60', 'R5O', 'P2V', 'CONSTELLATION', 'ELECTRA', 'LODESTAR', 'HUDSON'],
+            'JUNKERS': ['JUNKERS', 'JU-', 'JUG-', 'G.24', 'G.31', 'G.38'],
+            'FORD': ['FORD', 'TRI-MOTOR'],
+            'CURTISS': ['CURTISS', 'CONDOR'],
+            'FOKKER': ['FOKKER', 'F.'],
+            'HANDLEY PAGE': ['HANDLEY PAGE', 'HP.', 'W.8', 'W.9', 'W.10', 'O/'],
+            'CONSOLIDATED': ['CONSOLIDATED', 'PBY', 'CATALINA', 'CANSO', 'PB2B'],
+            'ANTONOV': ['ANTONOV', 'AN-'],
+            'ILYUSHIN': ['ILYUSHIN', 'IL-'],
+            'TUPOLEV': ['TUPOLEV', 'ANT-'],
+            'SAVOIA-MARCHETTI': ['SAVOIA-MARCHETTI', 'SM-', 'S-66', 'S.73'],
+            'SHORT': ['SHORT', 'S.8', 'S.17', 'S.23', 'S.25', 'S.26', 'S.30', 'SUNDERLAND', 'EMPIRE'],
+            'SIKORSKY': ['SIKORSKY', 'S-41', 'S-42', 'S-43', 'VS-44', 'Y1OA'],
+            'VICKERS': ['VICKERS', 'VIKING', 'VISCOUNT', 'VALENTIA', 'VALETTA'],
+            'AVRO': ['AVRO', 'LANCASTRIAN', 'TUDOR', 'JETLINER'],
+            'BRISTOL': ['BRISTOL', 'FREIGHTER'],
+            'CONVAIR': ['CONVAIR', 'CV-'],
+            'MARTIN': ['MARTIN', 'M-130', 'PBM', '2-0-2'],
+            'FAIRCHILD': ['FAIRCHILD', 'C-82', 'C-119', 'SA227'],
+            'GRUMMAN': ['GRUMMAN', 'G-159', 'G-73'],
+            'EMBRAER': ['EMBRAER', 'EMB-'],
+            'BEECH': ['BEECH', 'KING AIR'],
+            'LEARJET': ['LEARJET'],
+            'HAWKER SIDDELEY': ['HAWKER SIDDELEY', 'HS-'],
+            'CASA': ['CASA', 'C-207'],
+            'DORNIER': ['DORNIER', 'DO'],
+            'LET': ['LET', 'L-410'],
+            'AIRBUS': ['AIRBUS', 'A300', 'A310', 'A320', 'A330', 'A340', 'A350', 'A380']
+        }
+        
+        for manufacturer, patterns in manufacturer_patterns.items():
+            if any(pattern in aircraft_type for pattern in patterns):
+                return manufacturer
+        
+        # Fallback: extract first word
+        first_word = aircraft_type.split()[0] if ' ' in aircraft_type else aircraft_type
+        return first_word[:20]  # Limit length
     
-    # Convert to numeric with error handling
+    df['manufacturer'] = df['type'].apply(extract_manufacturer)
+    
+    # 2. Enhanced model extraction
+    def extract_model_family(aircraft_type):
+        aircraft_type = str(aircraft_type).upper()
+        
+        # DC family
+        if 'DC-' in aircraft_type:
+            model_match = re.search(r'DC-(\d+)', aircraft_type)
+            return f"DC-{model_match.group(1)}" if model_match else 'DC-UNKNOWN'
+        
+        # Boeing commercial jets
+        elif any(x in aircraft_type for x in ['707', '727', '737', '747', '757', '767', '777', '787']):
+            model_match = re.search(r'(7\d7)', aircraft_type)
+            return model_match.group(1) if model_match else 'BOEING-JET'
+        
+        # Junkers
+        elif 'JU-52' in aircraft_type or 'JU 52' in aircraft_type:
+            return 'JU-52'
+        elif 'G.24' in aircraft_type:
+            return 'G.24'
+        elif 'G.31' in aircraft_type:
+            return 'G.31'
+        
+        # Lockheed Constellation family
+        elif 'CONSTELLATION' in aircraft_type or 'L-749' in aircraft_type or 'L-649' in aircraft_type:
+            return 'CONSTELLATION'
+        elif 'LODESTAR' in aircraft_type or 'L-18' in aircraft_type:
+            return 'LODESTAR'
+        elif 'ELECTRA' in aircraft_type or 'L-14' in aircraft_type:
+            return 'ELECTRA'
+        
+        # Ford Tri-Motor family
+        elif 'TRI-MOTOR' in aircraft_type or 'FORD' in aircraft_type:
+            return 'TRI-MOTOR'
+        
+        # Catalina family
+        elif any(x in aircraft_type for x in ['PBY', 'CATALINA', 'CANSO']):
+            return 'CATALINA'
+        
+        # Sunderland family
+        elif 'SUNDERLAND' in aircraft_type:
+            return 'SUNDERLAND'
+        
+        # Antonov family
+        elif 'AN-' in aircraft_type:
+            model_match = re.search(r'AN-(\d+)', aircraft_type)
+            return f"AN-{model_match.group(1)}" if model_match else 'AN-UNKNOWN'
+        
+        # Ilyushin family
+        elif 'IL-' in aircraft_type:
+            model_match = re.search(r'IL-(\d+)', aircraft_type)
+            return f"IL-{model_match.group(1)}" if model_match else 'IL-UNKNOWN'
+        
+        # Default: try to extract model number
+        else:
+            model_match = re.search(r'(\d+)', aircraft_type)
+            return model_match.group(1) if model_match else 'UNKNOWN'
+    
+    df['model_family'] = df['type'].apply(extract_model_family)
+    
+    # 3. Enhanced aircraft categorization based on historical context
+    def categorize_aircraft(aircraft_type):
+        aircraft_type = str(aircraft_type).upper()
+        
+        # Large transport/airliner (4+ engines or large capacity)
+        if any(pattern in aircraft_type for pattern in [
+            'DC-6', 'DC-7', 'DC-8', 'DC-10', 'L-1049', 'L-1649', 'CONSTELLATION',
+            '707', '720', '747', '767', '777', '787', '880', '990',
+            'COMET', 'CARAVELLE', 'TRIDENT', 'VC10', 'IL-62', 'TU-104', 'TU-114', 'TU-134',
+            'CONVAIR 880', 'CONVAIR 990', 'SUD CARAVELLE'
+        ]):
+            return 'large_transport'
+        
+        # Medium transport (twin-engine airliners)
+        elif any(pattern in aircraft_type for pattern in [
+            'DC-3', 'DC-4', 'DC-5', 'C-47', 'C-54', 'MARTIN 2-0-2', 'MARTIN 4-0-4',
+            'CONVAIR 240', 'CONVAIR 340', 'CONVAIR 440', 'CV-', 'VISCOUNT', 'VANGUARD',
+            'IL-14', 'IL-18', 'TU-124', 'FRIENDSHIP', 'HERALD', 'YS-11',
+            '727', '737', 'CARAVELLE', 'BAC 111', 'DC-9', 'F28', 'TRIDENT'
+        ]):
+            return 'medium_transport'
+        
+        # Small transport/regional
+        elif any(pattern in aircraft_type for pattern in [
+            'TWIN OTTER', 'BRITTEN-NORMAN', 'BN-2', 'ISLANDER', 'TRISLANDER',
+            'BEECH 18', 'BEECH 99', 'PIPER NAVAJO', 'CESSNA 402', 'CESSNA 404',
+            'EMB-110', 'BANDEIRANTE', 'METRO', 'L-410', 'AN-24', 'AN-26', 'AN-2',
+            'DHC-', 'OTTER', 'BEAVER', 'HERALD'
+        ]):
+            return 'small_transport'
+        
+        # Flying boats
+        elif any(pattern in aircraft_type for pattern in [
+            'SUNDERLAND', 'CATALINA', 'PBY', 'CANSO', 'EMPIRE', 'SOLENT', 'PRINCESS',
+            'MARTIN M-130', 'BOEING 314', 'S-42', 'S-43', 'SANDRINGHAM'
+        ]):
+            return 'flying_boat'
+        
+        # Early airliners (pre-1940)
+        elif any(pattern in aircraft_type for pattern in [
+            'TRI-MOTOR', 'FORD', 'FOKKER F.', 'JUNKERS G.', 'HANDLEY PAGE',
+            'FARMAN', 'GOLIATH', 'HERCULES', 'ARGOSY', 'ATALANTA', 'SCYLLA',
+            'CONDOR', 'COMMODORE'
+        ]):
+            return 'early_airliner'
+        
+        # Cargo/freight
+        elif any(pattern in aircraft_type for pattern in [
+            'FREIGHTER', 'CARGO', 'C-130', 'C-119', 'C-82', 'HERCULES',
+            'BOXCAR', 'PACKET', 'IL-76', 'AN-12', 'TRANSALL'
+        ]):
+            return 'cargo'
+        
+        # Business/executive
+        elif any(pattern in aircraft_type for pattern in [
+            'LEARJET', 'GULFSTREAM', 'FALCON', 'CITATION', 'HAWKER', 'SABRELINER',
+            'JET COMMANDER', 'KING AIR', 'QUEEN AIR', 'AERO COMMANDER'
+        ]):
+            return 'business'
+        
+        # Default based on era and size hints
+        else:
+            return 'general_aviation'
+    
+    df['aircraft_category'] = df['type'].apply(categorize_aircraft)
+    
+    # 4. Technology era classification (more granular for historical aircraft)
+    def get_aircraft_era(year):
+        if pd.isna(year):
+            return 'unknown'
+        elif year < 1930:
+            return 'pioneer_era'  # 1903-1930
+        elif year < 1940:
+            return 'golden_age'   # 1930-1940
+        elif year < 1950:
+            return 'war_era'      # 1940-1950
+        elif year < 1960:
+            return 'early_jets'   # 1950-1960
+        elif year < 1970:
+            return 'jet_age'      # 1960-1970
+        elif year < 1980:
+            return 'wide_body'    # 1970-1980
+        elif year < 1990:
+            return 'modern_jets'  # 1980-1990
+        elif year < 2000:
+            return 'advanced'     # 1990-2000
+        else:
+            return 'next_gen'     # 2000+
+    
+    df['era'] = df['year'].apply(get_aircraft_era)
+    
+    # 5. Operational characteristics from accident patterns
+    df['fatalities'] = pd.to_numeric(df['fatalities'], errors='coerce').fillna(0)
     df['year'] = pd.to_numeric(df['year'], errors='coerce')
-    df['fatalities'] = pd.to_numeric(df['fatalities'], errors='coerce')
-    df = df.dropna(subset=['year', 'fatalities'])
     
-    try:
-        # Calculate statistics per aircraft type
-        stats = df.groupby('type').agg({
-            'fatalities': ['mean', 'sum', 'count'],
-            'year': ['min', 'max'],
-            'cat': lambda x: (x == 'A1').mean()  # Hull loss rate
-        })
-        
-        # Flatten multi-index columns
-        stats.columns = ['fatality_rate', 'total_fatalities', 'accident_count',
-                        'first_year', 'last_year', 'hull_loss_rate']
-        stats = stats.reset_index()
-        
-        # Merge stats back to original dataframe
-        df = df.merge(stats, on='type')
-        
-        # Calculate service years
-        df['service_years'] = df['last_year'] - df['first_year']
-        
-        # TF-IDF analysis for naming patterns
-        tfidf = TfidfVectorizer(
-            analyzer='char_wb',
-            ngram_range=(3, 5),
-            min_df=2,
-            lowercase=False
-        )
-        tfidf_matrix = tfidf.fit_transform(df['type'])
-        
-        # Feature matrix
-        features = pd.DataFrame({
-            'name_similarity': cosine_similarity(tfidf_matrix).mean(axis=1),
-            'fatality_rate': df['fatality_rate'],
-            'accident_frequency': df['accident_count'],
-            'hull_loss_rate': df['hull_loss_rate'],
-            'service_years': df['service_years']
-        })
-        
-        # Normalize features
-        features = (features - features.mean()) / features.std()
-        
-        # Cluster using DBSCAN
-        clustering = DBSCAN(eps=0.8, min_samples=3).fit(features)
-        df['family'] = clustering.labels_
-        
-        return df, features
-        
-    except Exception as e:
-        st.error(f"Analysis failed: {str(e)}")
-        return None, None
-
-def plot_family_analysis(df, features):
-    """Visualization with proper column references and actual plots"""
-    if df is None or features is None:
-        return
-    
-
-
-    # Calculate family stats using existing columns
-    family_stats = df.groupby('family').agg({
-        'type': ['nunique', lambda x: ', '.join(x.unique()[:3]) + '...'],
-        'fatalities': ['sum', 'mean', 'count'],
-        'hull_loss_rate': 'mean',
-        'service_years': 'mean'
+    # Calculate safety metrics per aircraft type
+    operational_features = df.groupby('type').agg({
+        'fatalities': ['mean', 'std', 'sum', 'count'],
+        'year': ['min', 'max', 'count'],
+        'cat': lambda x: (x.str.upper() == 'A1').sum() / len(x) if len(x) > 0 else 0,
     }).reset_index()
     
-    # Clean column names
-    family_stats.columns = [
-        'family', 'num_types', 'example_types', 
-        'total_fatalities', 'mean_fatalities', 'accident_count',
-        'hull_loss_rate', 'avg_service_years'
+    # Flatten column names
+    operational_features.columns = [
+        'type', 'avg_fatalities', 'fatality_std', 'total_fatalities', 'accident_count',
+        'first_accident', 'last_accident', 'total_years', 'hull_loss_rate'
     ]
     
-    # Filter out outliers
-    family_stats = family_stats[family_stats['family'] != -1]
+    # Merge back with main dataframe
+    df = df.merge(operational_features, on='type', how='left')
     
-    if family_stats.empty:
-        st.warning("No valid family clusters found")
-        return
-    
-    # Safety score calculation
-    family_stats['safety_score'] = (
-        1 / (1 + family_stats['mean_fatalities']) * 
-        (1 - family_stats['hull_loss_rate']) *
-        np.log1p(family_stats['avg_service_years'])
-    )
+    return df
 
-    # 1. Parallel Coordinates Plot
-    st.subheader("Family Safety Profiles")
-    fig = px.parallel_coordinates(
-        family_stats,
-        color='total_fatalities',
-        dimensions=[
-            'num_types', 'total_fatalities', 'mean_fatalities',
-            'hull_loss_rate', 'avg_service_years', 'safety_score'
-        ],
-        labels={
-            'num_types': 'Aircraft Types',
-            'total_fatalities': 'Total Fatalities',
-            'mean_fatalities': 'Avg Fatalities',
-            'hull_loss_rate': 'Hull Loss Rate',
-            'avg_service_years': 'Avg Service Years',
-            'safety_score': 'Safety Score'
-        },
-        color_continuous_scale=px.colors.diverging.RdYlGn_r,
-        width=1000, height=600
-    )
-    st.plotly_chart(fig, use_container_width=True)
+def create_engineering_families(df):
+    """Create aircraft families using engineering-based clustering"""
+    
+    # Extract enhanced features
+    df_enhanced = extract_aircraft_features(df)
+    
+    # Create feature matrix for clustering
+    categorical_features = ['manufacturer', 'model_family', 'aircraft_category', 'era']
+    numerical_features = ['avg_fatalities', 'accident_count', 'hull_loss_rate', 'year']
+    
+    # One-hot encode categorical features
+    df_encoded = pd.get_dummies(df_enhanced[categorical_features], prefix=categorical_features)
+    
+    # Normalize numerical features
+    scaler = StandardScaler()
+    numerical_scaled = scaler.fit_transform(df_enhanced[numerical_features].fillna(0))
+    numerical_df = pd.DataFrame(numerical_scaled, columns=numerical_features, index=df_enhanced.index)
+    
+    # Combine features
+    feature_matrix = pd.concat([df_encoded, numerical_df], axis=1)
+    
+    # Apply clustering methods
+    
+    # 1. DBSCAN clustering
+    dbscan = DBSCAN(eps=0.5, min_samples=3)
+    df_enhanced['dbscan_cluster'] = dbscan.fit_predict(feature_matrix)
+    
+    # 2. K-Means clustering
+    kmeans = KMeans(n_clusters=12, random_state=42, n_init=10)
+    df_enhanced['kmeans_cluster'] = kmeans.fit_predict(feature_matrix)
+    
+    # 3. Hybrid logical grouping
+    def create_logical_family(row):
+        return f"{row['manufacturer']}_{row['aircraft_category']}_{row['era']}"
+    
+    df_enhanced['logical_family'] = df_enhanced.apply(create_logical_family, axis=1)
+    
+    # 4. Model-based family grouping
+    def create_model_family(row):
+        return f"{row['manufacturer']}_{row['model_family']}"
+    
+    df_enhanced['model_based_family'] = df_enhanced.apply(create_model_family, axis=1)
+    
+    return df_enhanced, feature_matrix, scaler
 
-    # 2. Safety Score Bar Chart
-    st.subheader("Family Safety Scores")
-    safety_chart = alt.Chart(family_stats).mark_bar().encode(
-        x=alt.X('family:N', title='Family ID'),
-        y=alt.Y('safety_score:Q', title='Safety Score'),
-        color=alt.Color('safety_score:Q', scale=alt.Scale(scheme='redyellowgreen', domainMid=0)),
-        tooltip=['family', 'example_types', 'safety_score']
-    ).properties(
-        width=700,
-        height=400
-    )
-    st.altair_chart(safety_chart, use_container_width=True)
-
-
-def plot_family_network(df, features):
-    """Network visualization of aircraft families"""
-    if df is None or features is None:
-        return
+def analyze_family_performance(df_families):
+    """Analyze performance metrics for each aircraft family"""
     
-    # Prepare node data
-    nodes = df.groupby(['family', 'manufacturer']).size().reset_index(name='count')
-    nodes = nodes[nodes['family'] != -1]  # Remove outliers
+    family_methods = ['dbscan_cluster', 'kmeans_cluster', 'logical_family', 'model_based_family']
+    analysis_results = {}
     
-    # Create edges based on feature similarity
-    similarities = cosine_similarity(features)
-    np.fill_diagonal(similarities, 0)  # Remove self-similarity
-    edge_threshold = st.slider(
-        "Similarity threshold for connections",
-        min_value=0.1,
-        max_value=0.9,
-        value=0.5,
-        step=0.1
-    )
-    
-    # Create Plotly network graph
-    fig = go.Figure()
-    
-    # Add nodes
-    for _, row in nodes.iterrows():
-        fig.add_trace(go.Scatter(
-            x=[row['family']],
-            y=[row['count']],
-            mode='markers+text',
-            marker=dict(
-                size=row['count']*2,
-                color=row['family'],
-                colorscale='Viridis'
-            ),
-            text=f"Family {row['family']}<br>{row['manufacturer']}",
-            textposition="bottom center",
-            name=f"Family {row['family']}"
-        ))
-    
-    # Add edges (simplified for demo)
-    fig.update_layout(
-        title="Aircraft Family Network",
-        xaxis_title="Family Cluster",
-        yaxis_title="Number of Types",
-        showlegend=False,
-        height=600
-    )
-    
-    st.plotly_chart(fig, use_container_width=True)
-
-def plot_type_breakdown(family_data):
-    """Visualization of aircraft types in family"""
-    type_stats = family_data.groupby('type').agg({
-        'fatalities': ['sum', 'mean', 'count']
-    }).reset_index()
-    type_stats.columns = ['type', 'total_fatalities', 'mean_fatalities', 'accident_count']
-    
-    chart = alt.Chart(type_stats).mark_bar().encode(
-        x=alt.X('type:N', sort='-y', title='Aircraft Type'),
-        y=alt.Y('total_fatalities:Q', title='Total Fatalities'),
-        color=alt.Color('mean_fatalities:Q', scale=alt.Scale(scheme='reds')),
-        tooltip=['type', 'total_fatalities', 'mean_fatalities', 'accident_count']
-    ).properties(
-        height=400
-    )
-    
-    st.altair_chart(chart, use_container_width=True)
-
-def aircraft_family_analysis_page(df):
-    """Complete analysis page with interactive controls"""
-    st.header("Aircraft Family Safety Analysis")
-    st.markdown("""
-    Identifies groups of aircraft with similar naming patterns **and** accident characteristics,
-    helping detect potential design or maintenance issues.
-    """)
-    if len(df) > 10000  :# Adjust threshold based on your expected size
-        raise ValueError("Dataset too large for cloud processing - Please select some filters")
-    
-    # Explicitly reduce memory usage
-    df = df.copy()
-    for col in df.select_dtypes(include=['float']):
-        df[col] = pd.to_numeric(df[col], downcast='float')
-    for col in df.select_dtypes(include=['integer']):
-        df[col] = pd.to_numeric(df[col], downcast='integer')
-    
-    with st.expander("Analysis Methodology"):
-        st.markdown("""
-        1. **Naming Patterns**: Character-level TF-IDF analysis of aircraft type names  
-        2. **Accident Stats**: Fatality rates, hull loss rates, service years  
-        3. **Clustering**: DBSCAN algorithm groups similar aircraft  
-        4. **Safety Scoring**: Combines multiple safety metrics  
-        """)
-    
-    with st.spinner("Analyzing aircraft families (this may take a moment)..."):
-        result, features = analyze_aircraft_families(df)
-    
-    if result is not None:
-        st.success(f"Analyzed {len(result)} accidents across {result['type'].nunique()} aircraft types")
-        plot_family_analysis(result, features)
-    
-    # Initialize session state for family selection
-    if 'selected_family' not in st.session_state:
-        st.session_state.selected_family = None
-    
-
-    if st.button("Analyze aircraft Families", type="primary",help="An aircraft family clusters models with shared design (e.g., Boeing 737)."
-        " DBSCAN groups them by names, accident rates, and service years to spot systemic risks."):
-        with st.spinner("Analyzing aircraft families..."):
-            result, features = analyze_aircraft_families(df)
-            
-            if result is not None:
-                st.session_state.analysis_result = result
-                st.session_state.analysis_features = features
-                st.success(f"Analyzed {len(result)} accidents across {result['type'].nunique()} aircraft types")
-    
-    # Check if we have analysis results to show
-    if 'analysis_result' in st.session_state:
-        result = st.session_state.analysis_result
-        features = st.session_state.analysis_features
+    for method in family_methods:
+        # Skip DBSCAN noise points (-1)
+        if method == 'dbscan_cluster':
+            df_method = df_families[df_families[method] != -1].copy()
+        else:
+            df_method = df_families.copy()
         
-        # Family selection - uses session state to maintain selection
-        st.subheader("Family Selection")
-        family_options = sorted(result['family'].unique())
-        selected_family = st.selectbox(
-            "Select family to inspect",
-            options=family_options,
-            index=family_options.index(st.session_state.selected_family) if st.session_state.selected_family in family_options else 0,
-            key='family_selectbox'
+        # Calculate family statistics
+        family_stats = df_method.groupby(method).agg({
+            'fatalities': ['sum', 'mean', 'std', 'count'],
+            'accident_count': 'first',  # This is already aggregated per type
+            'hull_loss_rate': 'mean',
+            'year': ['min', 'max'],
+            'type': 'nunique'
+        }).round(2)
+        
+        # Flatten column names
+        family_stats.columns = [
+            'total_fatalities', 'avg_fatalities_per_accident', 'fatality_std',
+            'total_accidents', 'avg_accident_count', 'avg_hull_loss_rate',
+            'first_year', 'last_year', 'aircraft_types_count'
+        ]
+        
+        # Calculate safety score (lower is better)
+        family_stats['safety_score'] = (
+            family_stats['avg_fatalities_per_accident'] * 0.4 +
+            family_stats['avg_hull_loss_rate'] * 0.3 +
+            (family_stats['total_accidents'] / family_stats['aircraft_types_count']) * 0.3
         )
         
-        # Update session state when selection changes
-        if selected_family != st.session_state.selected_family:
-            st.session_state.selected_family = selected_family
-            st.rerun()  # Changed from st.experimental_rerun() to st.rerun()
+        # Add operational span
+        family_stats['operational_span'] = family_stats['last_year'] - family_stats['first_year']
         
-        # Show visualizations for selected family
-        if st.session_state.selected_family is not None:
-            family_data = result[result['family'] == st.session_state.selected_family]
-            
-            # Family overview metrics
-            st.subheader(f"Family {st.session_state.selected_family} Overview")
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                types_count = family_data['type'].nunique()
-                st.metric("Aircraft Types", types_count)
-            with col2:
-                total_fatal = family_data['fatalities'].sum()
-                st.metric("Total Fatalities", int(total_fatal))
-            with col3:
-                avg_fatal = family_data['fatalities'].mean()
-                st.metric("Avg Fatalities", f"{avg_fatal:.1f}")
-            
-            # Show example aircraft
-            example_types = ", ".join(family_data['type'].unique()[:3])
-            st.caption(f"Example aircraft: {example_types}")
-            
-            # Safety metrics visualization
-            st.subheader("Safety Metrics")
-            plot_family_safety_metrics(family_data)
-            
-            # Aircraft type breakdown
-            st.subheader("Aircraft Type Breakdown")
-            plot_type_breakdown(family_data)
-            
-            # Raw data view
-            with st.expander("View Detailed Family Data"):
-                st.dataframe(
-                    family_data[
-                        ['type', 'manufacturer', 'fatalities', 'year', 
-                         'operator', 'cat', 'fatality_rate', 'hull_loss_rate']
-                    ].sort_values('fatalities', ascending=False),
-                    height=300
-                )
-            
-            # Download option
-            st.download_button(
-                "Download Family Data",
-                data=family_data.to_csv(index=False),
-                file_name=f"aircraft_family_{st.session_state.selected_family}.csv"
-            )
+        analysis_results[method] = family_stats.sort_values('safety_score')
+    
+    return analysis_results
 
-def plot_family_safety_metrics(family_data):
-    """Visualization of safety metrics for selected family"""
-    metrics = {
-        'Fatality Rate': family_data['fatality_rate'].mean(),
-        'Hull Loss Rate': family_data['hull_loss_rate'].mean(),
-        'Service Years': family_data['service_years'].mean(),
-        'Accident Count': family_data['accident_count'].mean()
+def create_family_visualizations(df_families, analysis_results):
+    """Create comprehensive visualizations for aircraft families"""
+    
+    visualizations = {}
+    
+    # 1. Family Size Distribution
+    fig_sizes = go.Figure()
+    
+    for i, (method, stats) in enumerate(analysis_results.items()):
+        fig_sizes.add_trace(go.Histogram(
+            x=stats['aircraft_types_count'],
+            name=method.replace('_', ' ').title(),
+            opacity=0.7,
+            nbinsx=20
+        ))
+    
+    fig_sizes.update_layout(
+        title="Aircraft Family Size Distribution by Clustering Method",
+        xaxis_title="Number of Aircraft Types per Family",
+        yaxis_title="Number of Families",
+        barmode='overlay'
+    )
+    visualizations['family_sizes'] = fig_sizes
+    
+    # 2. Safety Score Comparison
+    fig_safety = go.Figure()
+    
+    for method, stats in analysis_results.items():
+        top_families = stats.head(15)  # Top 15 safest families
+        
+        fig_safety.add_trace(go.Bar(
+            name=method.replace('_', ' ').title(),
+            x=top_families.index,
+            y=top_families['safety_score'],
+            text=top_families['aircraft_types_count'],
+            texttemplate='%{text} types',
+            textposition='outside'
+        ))
+    
+    fig_safety.update_layout(
+        title="Top 15 Safest Aircraft Families by Method",
+        xaxis_title="Aircraft Family",
+        yaxis_title="Safety Score (Lower = Safer)",
+        barmode='group',
+        xaxis={'tickangle': 45}
+    )
+    visualizations['safety_comparison'] = fig_safety
+    
+    # 3. Era vs Category Heatmap
+    era_category_matrix = pd.crosstab(df_families['era'], df_families['aircraft_category'])
+    
+    fig_heatmap = px.imshow(
+        era_category_matrix.values,
+        x=era_category_matrix.columns,
+        y=era_category_matrix.index,
+        title="Aircraft Types by Era and Category",
+        labels=dict(x="Aircraft Category", y="Technology Era", color="Count"),
+        aspect="auto"
+    )
+    visualizations['era_category_heatmap'] = fig_heatmap
+    
+    # 4. Manufacturer Timeline
+    manufacturer_timeline = df_families.groupby(['manufacturer', 'year']).size().reset_index(name='accidents')
+    
+    fig_timeline = px.scatter(
+        manufacturer_timeline[manufacturer_timeline['manufacturer'].isin(
+            manufacturer_timeline['manufacturer'].value_counts().head(10).index
+        )],
+        x='year',
+        y='manufacturer',
+        size='accidents',
+        title="Major Aircraft Manufacturers Timeline (Top 10 by Accident Count)",
+        labels={'accidents': 'Number of Accidents'}
+    )
+    visualizations['manufacturer_timeline'] = fig_timeline
+    
+    # 5. Family Performance Scatter
+    best_method_stats = analysis_results['logical_family']  # Use logical family as reference
+    
+    fig_scatter = px.scatter(
+        best_method_stats.reset_index(),
+        x='avg_fatalities_per_accident',
+        y='avg_hull_loss_rate',
+        size='aircraft_types_count',
+        hover_name='logical_family',
+        title="Aircraft Family Performance Analysis",
+        labels={
+            'avg_fatalities_per_accident': 'Average Fatalities per Accident',
+            'avg_hull_loss_rate': 'Hull Loss Rate',
+            'aircraft_types_count': 'Family Size'
+        }
+    )
+    visualizations['performance_scatter'] = fig_scatter
+    
+    return visualizations
+
+def aircraft_family_analysis_page(df):
+    """Main analysis page with improved family detection"""
+    
+    st.header("🛩️ Advanced Aircraft Family Safety Analysis")
+    st.markdown("""
+    This analysis groups aircraft based on **engineering characteristics** rather than just names:
+    - **Manufacturer & Model Patterns** (Douglas DC-3 family, Boeing 707 family, etc.)
+    - **Aircraft Category** (large transport, medium transport, regional, flying boats, etc.)
+    - **Technology Era** (pioneer era, golden age, jet age, modern jets, etc.)
+    - **Operational Safety Patterns** (accident rates, fatality patterns, hull loss rates)
+    """)
+    
+    # Data size check and info
+    st.write(f"**Dataset Info:** {len(df):,} accidents involving {df['type'].nunique():,} different aircraft types")
+    
+    if len(df) > 50000:
+        st.warning("⚠️ Large dataset detected. Consider applying filters for better performance.")
+        
+    # Show some sample data
+    with st.expander("📊 Sample Data Preview"):
+        st.write("**Aircraft Type Distribution (Top 15):**")
+        top_types = df['type'].value_counts().head(15)
+        fig = px.bar(
+            x=top_types.values,
+            y=top_types.index,
+            orientation='h',
+            title="Most Common Aircraft Types in Dataset"
+        )
+        fig.update_layout(yaxis={'categoryorder':'total ascending'})
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with st.expander("🔬 Analysis Methodology"):
+        st.markdown("""
+        ### Feature Engineering:
+        1. **Enhanced Manufacturer Detection**: Recognizes historical manufacturers (Douglas, Lockheed, Junkers, etc.)
+        2. **Model Family Grouping**: Groups variants (DC-3/C-47, Boeing 707 series, etc.)
+        3. **Aircraft Categorization**: 
+           - Large Transport (4+ engines, intercontinental)
+           - Medium Transport (twin-engine airliners)
+           - Small Transport/Regional
+           - Flying Boats (Catalina, Sunderland, etc.)
+           - Early Airliners (Ford Tri-Motor, Junkers G.24, etc.)
+           - Cargo/Freight, Business Jets
+        4. **Technology Eras**: Pioneer (pre-1930), Golden Age (1930-40), War Era (1940-50), 
+           Early Jets (1950-60), Jet Age (1960-70), Wide-body (1970-80), Modern (1980-90), 
+           Advanced (1990-2000), Next-gen (2000+)
+        5. **Safety Metrics**: Fatality rates, hull loss rates, accident frequency patterns
+        
+        ### Clustering Methods:
+        - **DBSCAN**: Finds natural density-based clusters of similar aircraft
+        - **K-Means**: Creates balanced centroid-based groups  
+        - **Hybrid**: Logical grouping by manufacturer + category + era
+        - **Model-based**: Groups by manufacturer + specific model family
+        """)
+    
+    if st.button("🚀 Analyze Aircraft Families", type="primary"):
+        with st.spinner("Analyzing aircraft families using engineering characteristics..."):
+            
+            try:
+                # Perform analysis
+                df_families, feature_matrix, features_scaled = create_engineering_families(df)
+                family_analysis = analyze_family_performance(df_families)
+                visualizations = create_family_visualizations(df_families, family_analysis)
+                
+                st.success("✅ Aircraft family analysis completed!")
+                
+                # Display results in tabs
+                tab1, tab2, tab3, tab4, tab5 = st.tabs([
+                    "📊 Family Overview", "🏆 Top Performers", "📈 Performance Analysis", 
+                    "🕒 Historical Trends", "🔍 Detailed Statistics"
+                ])
+                
+                with tab1:
+                    st.subheader("Aircraft Family Classification Results")
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.plotly_chart(visualizations['family_sizes'], use_container_width=True)
+                    with col2:
+                        st.plotly_chart(visualizations['era_category_heatmap'], use_container_width=True)
+                    
+                    st.markdown("### Family Method Comparison")
+                    method_comparison = pd.DataFrame({
+                        'Method': ['DBSCAN Clustering', 'K-Means Clustering', 'Logical Grouping', 'Model-Based'],
+                        'Families Created': [
+                            len(family_analysis['dbscan_cluster']),
+                            len(family_analysis['kmeans_cluster']),
+                            len(family_analysis['logical_family']),
+                            len(family_analysis['model_based_family'])
+                        ],
+                        'Avg Family Size': [
+                            family_analysis['dbscan_cluster']['aircraft_types_count'].mean(),
+                            family_analysis['kmeans_cluster']['aircraft_types_count'].mean(),
+                            family_analysis['logical_family']['aircraft_types_count'].mean(),
+                            family_analysis['model_based_family']['aircraft_types_count'].mean()
+                        ]
+                    })
+                    st.dataframe(method_comparison.round(2))
+                
+                with tab2:
+                    st.subheader("🏆 Safest Aircraft Families")
+                    st.plotly_chart(visualizations['safety_comparison'], use_container_width=True)
+                    
+                    # Show top 10 safest families from logical grouping
+                    st.markdown("### Top 10 Safest Aircraft Families (Logical Grouping)")
+                    top_safe = family_analysis['logical_family'].head(10)[
+                        ['total_fatalities', 'avg_fatalities_per_accident', 'total_accidents', 
+                         'aircraft_types_count', 'safety_score', 'operational_span']
+                    ]
+                    st.dataframe(top_safe)
+                
+                with tab3:
+                    st.subheader("📈 Family Performance Analysis")
+                    st.plotly_chart(visualizations['performance_scatter'], use_container_width=True)
+                    
+                    # Performance insights
+                    st.markdown("### Key Performance Insights")
+                    logical_stats = family_analysis['logical_family']
+                    
+                    safest_family = logical_stats.index[0]
+                    largest_family = logical_stats.loc[logical_stats['aircraft_types_count'].idxmax()].name
+                    longest_service = logical_stats.loc[logical_stats['operational_span'].idxmax()].name
+                    
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Safest Family", safest_family, 
+                                f"Safety Score: {logical_stats.loc[safest_family, 'safety_score']:.2f}")
+                    with col2:
+                        st.metric("Largest Family", largest_family,
+                                f"{logical_stats.loc[largest_family, 'aircraft_types_count']} aircraft types")
+                    with col3:
+                        st.metric("Longest Service", longest_service,
+                                f"{logical_stats.loc[longest_service, 'operational_span']} years")
+                
+                with tab4:
+                    st.subheader("🕒 Historical Development Trends")
+                    st.plotly_chart(visualizations['manufacturer_timeline'], use_container_width=True)
+                    
+                    # Era analysis
+                    st.markdown("### Aircraft Development by Era")
+                    era_stats = df_families.groupby('era').agg({
+                        'type': 'nunique',
+                        'fatalities': 'sum',
+                        'accident_count': 'sum'
+                    }).rename(columns={
+                        'type': 'Unique Aircraft Types',
+                        'fatalities': 'Total Fatalities',
+                        'accident_count': 'Total Accidents'
+                    })
+                    st.dataframe(era_stats)
+                
+                with tab5:
+                    st.subheader("🔍 Detailed Family Statistics")
+                    
+                    # Method selector
+                    method_options = {
+                        'Logical Grouping': 'logical_family',
+                        'Model-Based': 'model_based_family',
+                        'K-Means Clustering': 'kmeans_cluster',
+                        'DBSCAN Clustering': 'dbscan_cluster'
+                    }
+                    
+                    selected_method = st.selectbox("Select Grouping Method:", options=list(method_options.keys()))
+                    method_key = method_options[selected_method]
+                    
+                    # Show detailed statistics
+                    detailed_stats = family_analysis[method_key]
+                    st.dataframe(detailed_stats)
+                    
+                    # Download option
+                    csv = detailed_stats.to_csv()
+                    st.download_button(
+                        label="📥 Download Family Statistics as CSV",
+                        data=csv,
+                        file_name=f"aircraft_family_stats_{method_key}.csv",
+                        mime="text/csv"
+                    )
+                
+                # Additional insights section
+                st.markdown("---")
+                st.subheader("🔍 Key Findings")
+                
+                with st.expander("📋 Analysis Summary"):
+                    logical_families = family_analysis['logical_family']
+                    
+                    st.markdown(f"""
+                    ### Aircraft Family Analysis Results
+                    
+                    **Dataset Overview:**
+                    - **Total Aircraft Types Analyzed:** {df['type'].nunique():,}
+                    - **Total Accidents:** {len(df):,}
+                    - **Families Identified:** {len(logical_families)} (using logical grouping)
+                    - **Analysis Period:** {df['year'].min():.0f} - {df['year'].max():.0f}
+                    
+                    **Top Safety Performers:**
+                    - **Safest Family:** {logical_families.index[0]} (Safety Score: {logical_families.iloc[0]['safety_score']:.2f})
+                    - **Largest Safe Family:** {logical_families[logical_families['aircraft_types_count'] >= 3].index[0]}
+                    - **Most Experienced:** {logical_families.loc[logical_families['operational_span'].idxmax()].name} ({logical_families['operational_span'].max():.0f} years of service)
+                    
+                    **Historical Insights:**
+                    - **Pioneer Era (pre-1930):** {len(df_families[df_families['era'] == 'pioneer_era'])} accidents
+                    - **Golden Age (1930-1940):** {len(df_families[df_families['era'] == 'golden_age'])} accidents
+                    - **Jet Age Impact:** Significant safety improvements visible from 1960s onward
+                    - **Modern Aviation:** Latest aircraft families show improved safety metrics
+                    
+                    **Manufacturer Patterns:**
+                    - **Most Represented:** {df_families['manufacturer'].value_counts().index[0]} ({df_families['manufacturer'].value_counts().iloc[0]} accidents)
+                    - **Historical Leaders:** Douglas, Boeing, and Lockheed dominated different eras
+                    - **Emerging Players:** Regional manufacturers gained prominence in later periods
+                    """)
+                
+            except Exception as e:
+                st.error(f"❌ Analysis failed: {str(e)}")
+                st.info("💡 Try filtering the dataset or check data quality")
+                
+                # Debug information
+                with st.expander("🔧 Debug Information"):
+                    st.write("**Dataset columns:**", list(df.columns))
+                    st.write("**Data types:**", df.dtypes)
+                    st.write("**Sample data:**")
+                    st.dataframe(df.head())
+
+def create_aircraft_similarity_analysis(df_families):
+    """Create similarity analysis between aircraft types"""
+    
+    # Calculate similarity based on operational characteristics
+    aircraft_profiles = df_families.groupby('type').agg({
+        'manufacturer': 'first',
+        'model_family': 'first',
+        'aircraft_category': 'first',
+        'era': 'first',
+        'avg_fatalities': 'first',
+        'accident_count': 'first',
+        'hull_loss_rate': 'first',
+        'year': 'mean'
+    }).reset_index()
+    
+    return aircraft_profiles
+
+def export_family_data(df_families, analysis_results):
+    """Export family analysis results for external use"""
+    
+    export_data = {}
+    
+    # Family classifications
+    family_classifications = df_families[['type', 'manufacturer', 'model_family', 
+                                       'aircraft_category', 'era', 'logical_family', 
+                                       'model_based_family']].drop_duplicates()
+    export_data['classifications'] = family_classifications
+    
+    # Family performance metrics
+    for method, stats in analysis_results.items():
+        export_data[f'performance_{method}'] = stats
+    
+    # Summary statistics
+    summary_stats = {
+        'total_aircraft_types': df_families['type'].nunique(),
+        'total_accidents': len(df_families),
+        'analysis_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'methods_used': list(analysis_results.keys())
     }
+    export_data['summary'] = pd.DataFrame([summary_stats])
     
-    fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=list(metrics.keys()),
-        y=list(metrics.values()),
-        marker_color=['#EF553B', '#00CC96', '#636EFA', '#AB63FA']
-    ))
+    return export_data
+
+# Additional utility functions for enhanced analysis
+
+def identify_aircraft_anomalies(df_families):
+    """Identify aircraft types with unusual safety patterns"""
     
-    fig.update_layout(
-        yaxis_title="Metric Value",
-        height=400
+    # Calculate z-scores for key metrics
+    metrics = ['avg_fatalities', 'accident_count', 'hull_loss_rate']
+    
+    for metric in metrics:
+        mean_val = df_families[metric].mean()
+        std_val = df_families[metric].std()
+        df_families[f'{metric}_zscore'] = (df_families[metric] - mean_val) / std_val
+    
+    # Identify outliers (z-score > 2 or < -2)
+    anomalies = df_families[
+        (abs(df_families['avg_fatalities_zscore']) > 2) |
+        (abs(df_families['accident_count_zscore']) > 2) |
+        (abs(df_families['hull_loss_rate_zscore']) > 2)
+    ][['type', 'manufacturer', 'aircraft_category'] + 
+      [col for col in df_families.columns if 'zscore' in col]]
+    
+    return anomalies
+
+def create_safety_evolution_timeline(df_families):
+    """Create timeline showing safety evolution by era and category"""
+    
+    safety_timeline = df_families.groupby(['era', 'aircraft_category']).agg({
+        'avg_fatalities': 'mean',
+        'hull_loss_rate': 'mean',
+        'accident_count': 'sum',
+        'type': 'nunique'
+    }).reset_index()
+    
+    # Add era ordering for proper timeline
+    era_order = ['pioneer_era', 'golden_age', 'war_era', 'early_jets', 
+                 'jet_age', 'wide_body', 'modern_jets', 'advanced', 'next_gen']
+    
+    safety_timeline['era_num'] = safety_timeline['era'].map(
+        {era: i for i, era in enumerate(era_order)}
     )
     
-    st.plotly_chart(fig, use_container_width=True)
+    return safety_timeline.sort_values('era_num')
+
+def generate_family_recommendations(analysis_results):
+    """Generate recommendations based on family analysis"""
+    
+    logical_families = analysis_results['logical_family']
+    
+    recommendations = []
+    
+    # Safest families recommendation
+    top_safe = logical_families.head(5)
+    recommendations.append({
+        'category': 'Safest Aircraft Families',
+        'description': 'Families with the lowest safety scores (best safety record)',
+        'families': list(top_safe.index),
+        'metric': 'Safety Score',
+        'values': top_safe['safety_score'].tolist()
+    })
+    
+    # Most experienced families
+    experienced = logical_families.nlargest(5, 'operational_span')
+    recommendations.append({
+        'category': 'Most Experienced Families',
+        'description': 'Families with longest operational history',
+        'families': list(experienced.index),
+        'metric': 'Years of Service',
+        'values': experienced['operational_span'].tolist()
+    })
+    
+    # Diverse families (many aircraft types)
+    diverse = logical_families.nlargest(5, 'aircraft_types_count')
+    recommendations.append({
+        'category': 'Most Diverse Families',
+        'description': 'Families with most aircraft type variants',
+        'families': list(diverse.index),
+        'metric': 'Aircraft Types',
+        'values': diverse['aircraft_types_count'].tolist()
+    })
+    
+    return recommendations
+
 

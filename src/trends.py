@@ -1,4 +1,4 @@
-# Add these imports at the top of your streamlit_app.py
+#trends.py
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots

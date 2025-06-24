@@ -1,0 +1,472 @@
+1. Antonov An-12B
+2. Antonov An-12BK
+3. Antonov An-12BP
+4. Antonov An-2
+5. Antonov An-24B
+6. Antonov An-26
+7. Antonov An-2R
+8. Antonov An-2T
+9. Antonov An-32
+10. Antonov An-32A
+11. Avia 14
+12. BN-2A Islander
+13. BN-2A-20 Islander
+14. BN-2A-21 Islander
+15. BN-2A-26 Islander
+16. BN-2A-8 Islander
+17. BN-2B-21 Islander
+18. Douglas C-47A (DC-3)
+19. Douglas C-47D (DC-3)
+20. Fairchild C-82A Packet
+21. Fairchild SA227-DC Metro 23 (C-26B)
+22. Grumman G-159 Gulfstream I
+23. Ilyushin Il-12
+24. Ilyushin Il-14T
+25. Ilyushin Il-76
+26. Ilyushin Il-76M
+27. Ilyushin Il-76TD
+28. Ilyushin Il-78
+29. Let L-410T
+30. Let L-410UVP
+31. Lisunov Li-2
+32. Lisunov Li-2F
+33. SNCASO S.O.94R Corse II
+34. Super Avia 14
+35. Yakovlev Yak-40EC
+36. Caproni Ca.48
+37. Felixstowe Fury
+38. Handley Page O/7
+39. Handley Page O/400
+40. Aeromarine 75
+41. Caproni Ca.60 Noviplano
+42. Farman F.60 Goliath
+43. Handley Page O/10
+44. Handley Page W.8
+45. Farman F.61 Goliath
+46. BlÃ©riot 155
+47. Handley Page W.10
+48. Junkers G.24
+49. Fokker F.VIII
+50. Handley Page W.8b
+51. Ford 4-AT-A Tri-Motor
+52. Farman F.63bis Goliath
+53. Ford 4-AT-B Tri-Motor
+54. Junkers G.31de
+55. Ford 4-AT-C Tri-Motor
+56. Junkers G.31fi
+57. Junkers G.31ce
+58. Ford 5-AT-B Tri-Motor
+59. Dornier Do R4 Superwal
+60. Vickers 170 Vanguard
+61. Fokker F.10A
+62. Ford 5-AT-A Tri-Motor
+63. Junkers G.24li
+64. DH.66 Hercules
+65. Rohrbach Ro X Romar I
+66. Sabca (Handley Page) W.8B
+67. Short S.8/1 Calcutta
+68. Junkers G.24bi
+69. Fokker F.32
+70. Curtiss B-2 Condor (Condor 18)
+71. Farman F.180T
+72. Fokker F.10
+73. Ford 5-AT-C Tri-Motor
+74. Junkers R-42 (G.24)
+75. Handley Page W.9a Hampstead
+76. Curtiss Condor 18
+77. Ford JR-3 (5-AT-C) Tri-Motor
+78. Handley Page W.8g
+79. Ford 4-AT-E Tri-Motor
+80. Junkers JuG-1W (G.24)
+81. Ford Tri-Motor
+82. Junkers F.24ko (G.24)
+83. A.W. Argosy II
+84. A.W. Argosy IA
+85. Fokker F.IX
+86. Sikorsky S.41B
+87. Ford XB-906 (Tri-Motor)
+88. Junkers PS-5 (G.24)
+89. Boeing 80A
+90. Junkers Ju-52/3mce
+91. LiorÃ© et Olivier 212
+92. Ford 5-AT-D Tri-Motor
+93. LiorÃ© et Olivier 213
+94. Junkers Ju-52/1mcai
+95. Curtiss T-32 Condor II
+96. Kalinin K-7
+97. Dewoitine D.332
+98. Junkers F.24k2ay (G.24)
+99. Ford C-4A (5-AT-D) Tri-Motor
+100. Ford 4-AT-D Tri-Motor
+101. Curtiss AT-32C Condor II
+102. DH.86 Express
+103. Ford 4-AT-.  Tri-Motor
+104. Junkers Ju-52/3mge
+105. Curtiss AT-32B Condor II
+106. Douglas DC-2-115A
+107. Curtiss T-32C Condor II
+108. Fokker F.XII
+109. Consolidated 16 Commodore
+110. Junkers Ju-52/3mho
+111. Douglas DC-2-112
+112. Tupolev ANT-20 Maxim Gorky
+113. Savoia-Marchetti S-66
+114. Fokker F.XXII
+115. Douglas DC-2-115E
+116. Junkers Ju-52/3m
+117. Douglas DC-2A-127
+118. Boulton Paul P.71A
+119. Savoia-Marchetti S.73P
+120. Ford 5-AT-.  Tri-Motor
+121. Short S.17 Kent
+122. Junkers G.24he
+123. Savoia-Marchetti S.73
+124. Potez 62
+125. Short S.8 Calcutta
+126. Douglas DC-2-120
+127. Douglas DC-2-115B
+128. Sikorsky S-42
+129. Douglas DC-2-115K
+130. LiorÃ©-et-Olivier H.242/1
+131. Douglas DC-2-172
+132. Junkers G.31fo
+133. Vickers Valentia
+134. Junkers G.38di
+135. Curtiss AT-32A Condor II
+136. DH.86A Express
+137. Junkers Ju-52/3mfe
+138. CANT Z.506
+139. A.W. AW.15 Atalanta
+140. Douglas DC-2-118B
+141. Douglas DC-2-118A
+142. Sabca Savoia-Marchetti S.73P
+143. Douglas DC-3A-197
+144. Short S.23 Empire Flying Boat Mk I
+145. Douglas DC-3-194B
+146. Douglas DC-2-115M
+147. Junkers Ju-52/3mg3e
+148. Douglas C-33 (DC-2)
+149. Handley Page HP.42E
+150. Sikorsky S-43
+151. Junkers Ju-52/3msai
+152. Douglas DC-2-115L
+153. Sikorsky S-43B
+154. Douglas DC-2-152
+155. Sikorsky S-43W
+156. Curtiss AT-32D Condor II
+157. Dewoitine D.333
+158. Douglas DC-2-115D
+159. Junkers Ju-52/3mte
+160. Potez 621
+161. Lockheed 14-H Super Electra
+162. Sikorsky S-42B
+163. Consolidated PBY-2 Catalina
+164. Junkers Ju-90V1
+165. Fokker F.XX
+166. Tupolev G-2
+167. Dewoitine D.338
+168. WM Fokker F.VIIIb
+169. Ford 5-AT-DS Tri-Motor
+170. Lockheed 14-H2 Super Electra
+171. Douglas DST-A-207A (DC-3)
+172. Curtiss YC-30 Condor II
+173. Douglas DC-3-228
+174. Martin M-130
+175. Macchi M.C.94-II
+176. Douglas DC-2-221
+177. CANT Z.506C
+178. Short Sunderland I
+179. Douglas DC-2-210
+180. Douglas DC-3
+181. Douglas DC-3-194D
+182. Lockheed 14-WF62 Super Electra
+183. Savoia-Marchetti SM-75C
+184. Junkers Ju-90V2
+185. Douglas DC-3A-191
+186. Focke-Wulf Fw 200
+187. Nakajima/Douglas DC-2
+188. Lockheed 14-WG3B Super Electra
+189. Fokker F.XVIII
+190. Short S.23 Empire Flying Boat Mk II
+191. Sikorsky S-42A
+192. Ford 6-AT-AS Tri-Motor
+193. Boeing S.307 Stratoliner
+194. Consolidated PBY-4 Catalina
+195. Douglas DC-2-192
+196. Short S.30 Empire Flying Boat
+197. Savoia-Marchetti SM-75
+198. Junkers F.24kay (G.24)
+199. Junkers Ju-52/3mg4c
+200. Caproni Ca.133
+201. Handley Page HP.42W
+202. Junkers Ju-52/3mlu
+203. Bloch 220
+204. DH.86B Express
+205. Short Sunderland
+206. Junkers Ju-52/3mg4e
+207. Douglas DC-3-194F
+208. Fokker F.VIIIa
+209. Boeing S.307B Stratoliner
+210. Fokker F.XXXVI
+211. A.W. AW.27 Ensign I
+212. Douglas DC-3-227B
+213. Junkers Ju-52/3mba
+214. Douglas R3D-1 (DC-5)
+215. Lisunov PS-84
+216. DH.91 Albatross
+217. Douglas DC-3-227
+218. Douglas DC-3-313
+219. Short L.17 Scylla
+220. Douglas DC-1-109
+221. DH.95 Flamingo
+222. Douglas DC-3-220
+223. Short Sunderland Mk I
+224. Douglas DC-3-197
+225. Junkers Ju-52/3mbe
+226. Junkers Ju-90A
+227. Lockheed 14-N2 Super Electra
+228. Fiat G.18
+229. SNCAC (Farman) NC.223.4
+230. Douglas DC-3A-197C
+231. Junkers Ju-52 See
+232. Junkers Ju-52/3mg6e
+233. Douglas R2D-1 (DC-2)
+234. Douglas DC-3B-202
+235. Junkers Ju-52/3mg5e
+236. Douglas DST-318A (DC-3)
+237. Douglas DC-3-277C
+238. Sikorsky Y1OA-8 (S-43)
+239. Lockheed 18 Lodestar
+240. Douglas DC-3-201B
+241. Lockheed 14-N3 Super Electra
+242. Douglas DC-3-196A
+243. Short Sunderland III
+244. Junkers G.38gi/fi
+245. Junkers Ju-52m/3
+246. Consolidated C-12 Commodore (16-2)
+247. Consolidated Catalina I (PBY-5)
+248. Consolidated PBY-5 Catalina
+249. Douglas C-50B (DC-3-397)
+250. Macchi C.100
+251. Douglas DC-2-115F
+252. Douglas DC-3A-269
+253. Douglas DC-3-277B
+254. Consolidated Catalina
+255. Short Sunderland II
+256. Douglas DC-2-115G
+257. Douglas DC-3-382
+258. Junkers G.31go
+259. Junkers G.31ba
+260. Avro 642 Eighteen
+261. Douglas DC-3-194C
+262. Douglas R3D-2 (DC-5)
+263. Curtiss BT-32 Condor II
+264. Douglas C-53-DO (DC-3)
+265. Short S.25 Sunderland
+266. Junkers Ju-52/3mg8e
+267. Consolidated PBY-5A Catalina
+268. Douglas C-53 Skytrooper (DC-3)
+269. Consolidated 28-5MNE Catalina
+270. Douglas C-39 (DC-2)
+271. Douglas DC-3-270
+272. Douglas DC-3 (Nakajima L2D)
+273. Douglas DC-3A-269C
+274. Douglas C-49H (DC-3-228)
+275. Douglas C-50A (DC-3-401)
+276. Douglas DC-3A-414
+277. Douglas C-49G (DC-3)
+278. Savoia-Marchetti SM-75RT
+279. Douglas C-47 (DC-3)
+280. Consolidated PBY-3 Catalina
+281. Lockheed 414 Hudson III
+282. Douglas C-49F-DO (DC-3)
+283. Douglas C-49E (DC-3)
+284. Lockheed C-60B Lodestar
+285. Douglas C-32A (DC-2-120)
+286. Douglas R4D-3 (DC-3)
+287. Short Sunderland Mk II
+288. LiorÃ©-et-Olivier H.246.1
+289. Consolidated Catalina IB (PBY-5B)
+290. Douglas DC-5-511
+291. Sunderland Mk II
+292. Douglas XC-32 (DC-2)
+293. Douglas DC-3A-228
+294. Douglas C-52C (DC-3-402)
+295. Lockheed 18 Lodestar I
+296. Consolidated Catalina IIIA (PBY-5A)
+297. Dewoitine D.342
+298. Vought-Sikorsky VS-44
+299. Lockheed C-111 Super Electra
+300. Douglas R4D-1 (DC-3)
+301. Douglas C-53 (DC-3)
+302. Douglas C-49E (DC-3-DST)
+303. Douglas C-53B Skytrooper (DC-3)
+304. Lockheed Lodestar II
+305. Douglas DC-3-178
+306. Lockheed B-34 Lexington
+307. Douglas C-51 (DC-3-270C)
+308. Consolidated OA-10 Catalina (PBY-5)
+309. Douglas C-49H (DC-3)
+310. Douglas DC-3-209A
+311. Douglas C-49D (DC-3)
+312. Fiat G.12LGA
+313. Douglas C-50C
+314. Douglas C-49-DO (DC-3)
+315. Lockheed C-57 Lodestar
+316. Douglas DC-2-171
+317. Short Sunderland Mk III
+318. Douglas C-48B (DC-3)
+319. Consolidated C-87
+320. Douglas C-32A (DC-2)
+321. Douglas DC-3-391
+322. Junkers Ju 52/3m
+323. Tupolev ANT-20bis
+324. Junkers Ju-52/3mge4
+325. Consolidated 28-2 Catalina
+326. Douglas C-34 (DC-2)
+327. Consolidated 28-5MC Canso (PBY-5)
+328. Shorts S.26 G Class
+329. Douglas C-49G-DO (DC-3)
+330. Douglas C-54 (DC-4)
+331. Douglas DC-3A-399
+332. Fiat G.18V
+333. Douglas Dakota II (DC-3)
+334. Douglas C-49K (DC-3-455)
+335. Douglas DC-3-294A
+336. Boeing 314A
+337. Douglas C-49J (DC-3)
+338. Curtiss C-46
+339. Lockheed C-60A Lodestar
+340. Douglas DC-3-232A
+341. Curtiss R5C-1 (C-46A)
+342. Lockheed R5O-5 (Lodestar)
+343. Savoia-Marchetti SM-75 bis
+344. Lockheed C-60A-1-LO Lodestar
+345. Junkers Ju-52/3mg10e
+346. Consolidated Catalina 1A
+347. PBV-1A Canso A (PBY-5A)
+348. Curtiss C-46A
+349. Douglas DC-3-196
+350. Douglas DC-3-194
+351. Short Sunderland GR.3
+352. Lockheed C-60-LO Lodestar
+353. Douglas R4D-5 (DC-3)
+354. Douglas C-48 (DC-3)
+355. Lockheed 414 Hudson VI
+356. Douglas C-49K (DC-3)
+357. Douglas C-53D-DO (DC-3)
+504. Focke-Wulf Fw 200A-0
+505. Douglas C-47D
+506. Martin PBM-5G Mariner
+507. Douglas R4D-2 (DC-3)
+508. Fiat G.12CA
+509. Boeing XC-97
+510. Avro 691 Lancastrian C.4
+511. Amiot AAC.1 (Junkers Ju-52/3m)
+512. Ilyushin Il-12P
+513. Catalina IVB (PBY-5A)
+514. Douglas DC-3F
+515. Avro 689 Tudor 2
+516. Short S.25 Sandringham 6
+517. Vickers Viking C.2
+518. Vickers 615 Viking 1B
+519. SNCASE SE.161 Languedoc
+520. Bristol 170 Freighter I
+521. Avro 691 Lancastrian B.3
+522. Douglas DC-6
+523. Lockheed 414-08 Hudson IVA
+524. PBV-1A Canso (PBY-5A)
+525. Bristol 170 Freighter XI
+526. Douglas R5D-4 (DC-4)
+527. Lisunov Li-2P
+528. Lockheed P2V-2 Neptune
+529. Bristol 170 Freighter IA
+530. Douglas C-48C (DC-3)
+531. Douglas DC-2
+532. Vickers 628 Viking 1B
+533. Vickers 610 Viking 1B
+534. Douglas DC-3A-228F
+535. Lockheed L-649 Constellation
+536. Lockheed R5O-4 Lodestar
+537. Bristol 170 Freighter 21E
+538. SNCASE SE.161/P7 Languedoc
+539. Avro 688 Tudor 1
+540. Vickers 632 Viking 1B
+541. Vickers 604 Viking 1B
+542. Lockheed 414-56 Hudson IIIA
+543. Siebel Si 204
+544. Douglas R4D (DC-3)
+545. Miles M.60 Marathon I
+546. SNCASE SE.161/1 Languedoc
+547. Fiat G.212PW
+548. Douglas C-47 Pe're (DC-3)
+549. SNCAC NC.211 Cormoran
+550. Short S.25 Sandringham 2
+551. Naval Aircraft Factory PBN-1 Nomad
+552. Avro 691 Lancastrian XPP
+553. Canadair DC-4M1 North Star
+554. Douglas C-47 (VC-117B) (DC-3)
+555. Martin 2-0-2
+556. PB2B-1 Catalina IVB
+557. Handley Page Hastings C.1
+558. Douglas DC-3A-447
+559. Douglas DC-3-232
+560. Douglas R5D-3 (C-54D)
+561. Convair CV-240-2
+562. Ilyushin Il-12B
+563. Douglas TS-62 (DC-3)
+564. Douglas DST-144 (DC-3)
+565. Consolidated Catalina IIA (PBY-5A)
+566. Ford 4-AT-F Tri-Motor
+567. Ford 4-AT Tri-Motor
+568. Douglas VC-47D (DC-3)
+569. Breguet 730
+570. Avro 688 Tudor 4B
+571. Beech 34 Twin Quad
+572. Lockheed L-749A Constellation
+573. Douglas C-54M (DC-4)
+574. Lockheed R5O-3 (Lodestar)
+575. Fiat G.212CP
+576. Bristol 170 Freighter 31
+577. Convair CV-240-0
+578. Lockheed L-749-79-33 Constellation
+579. Douglas R5D-4 (C-54E)
+580. Fairchild EC-82A Packet
+581. Douglas DC-3-201D
+582. Bristol 170 Freighter 21
+583. Convair CV-240-13
+584. Avro Canada C102 Jetliner
+585. Avro 691 Lancastrian C.2
+586. Short Sunderland 3
+587. Lockheed L-749-79-46 Constellation
+588. Grumman G-73 Mallard
+589. Vickers Valetta C.1
+590. Savoia-Marchetti SM-95C
+591. PB2B-1 Canso B
+1565. Vickers 838 Viscount
+1566. CASA C-207C (T.7) Azor
+1567. Antonov An-12BK-PPS
+1568. Dornier Do 28D-2 Skyservant
+1569. Boeing 727-256
+1570. Douglas DC-3-201A
+1571. Douglas DC-3-217B
+1572. T-39D Sabreliner
+1573. Ilyushin Il-14FKM
+1574. Nord 262A-27
+1575. Douglas DC-3A-438
+1576. Beech 200 Super King Air
+1577. Embraer C-95 Bandeirante (EMB-110)
+1578. Hawker Siddeley HS-125-600A
+1579. Learjet 35
+1580. Convair VC-131H (CV-580)
+1581. Ilyushin Il-62M
+1582. Douglas DC-3A-408
+1583. Lockheed EC-130Q Hercules
+1584. BN-2A-27 Islander
+1585. Boeing 727-78
+1586. NAMC YS-11A-301
+1587. Rausch Super 18 Hudstar
+1588. Let L-410AF
+1589. Boeing 707-430
+1590. Airbus A300
+1591. Fairchild C-119L Flying Boxcar
