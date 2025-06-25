@@ -429,9 +429,9 @@ def create_family_visualizations(df_families, analysis_results):
 def aircraft_family_analysis_page(df):
     """Main analysis page with improved family detection"""
     
-    st.header("🛩️ Advanced Aircraft Family Safety Analysis")
+    st.header(" Aircraft Family Safety Analysis")
     st.markdown("""
-    This analysis groups aircraft based on **engineering characteristics** rather than just names:
+    This analysis groups aircraft based on engineering characteristics:
     - **Manufacturer & Model Patterns** (Douglas DC-3 family, Boeing 707 family, etc.)
     - **Aircraft Category** (large transport, medium transport, regional, flying boats, etc.)
     - **Technology Era** (pioneer era, golden age, jet age, modern jets, etc.)
@@ -442,10 +442,10 @@ def aircraft_family_analysis_page(df):
     st.write(f"**Dataset Info:** {len(df):,} accidents involving {df['type'].nunique():,} different aircraft types")
     
     if len(df) > 50000:
-        st.warning("⚠️ Large dataset detected. Consider applying filters for better performance.")
+        st.warning("Large dataset detected. Consider applying filters for better performance.")
         
     # Show some sample data
-    with st.expander("📊 Sample Data Preview"):
+    with st.expander("Sample Data Preview"):
         st.write("**Aircraft Type Distribution (Top 15):**")
         top_types = df['type'].value_counts().head(15)
         fig = px.bar(
@@ -457,10 +457,10 @@ def aircraft_family_analysis_page(df):
         fig.update_layout(yaxis={'categoryorder':'total ascending'})
         st.plotly_chart(fig, use_container_width=True)
     
-    with st.expander("🔬 Analysis Methodology"):
+    with st.expander("Analysis Methodology"):
         st.markdown("""
         ### Feature Engineering:
-        1. **Enhanced Manufacturer Detection**: Recognizes historical manufacturers (Douglas, Lockheed, Junkers, etc.)
+        1. ** Manufacturer Detection**: Recognizes historical manufacturers (Douglas, Lockheed, Junkers, etc.)
         2. **Model Family Grouping**: Groups variants (DC-3/C-47, Boeing 707 series, etc.)
         3. **Aircraft Categorization**: 
            - Large Transport (4+ engines, intercontinental)
@@ -481,7 +481,7 @@ def aircraft_family_analysis_page(df):
         - **Model-based**: Groups by manufacturer + specific model family
         """)
     
-    if st.button("🚀 Analyze Aircraft Families", type="primary"):
+    if st.button("Analyze Aircraft Families", type="primary"):
         with st.spinner("Analyzing aircraft families using engineering characteristics..."):
             
             try:
@@ -494,8 +494,8 @@ def aircraft_family_analysis_page(df):
                 
                 # Display results in tabs
                 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-                    "📊 Family Overview", "🏆 Top Performers", "📈 Performance Analysis", 
-                    "🕒 Historical Trends", "🔍 Detailed Statistics"
+                    "Family Overview", "Top Performers", "Performance Analysis", 
+                    "Historical Trends", "Detailed Statistics"
                 ])
                 
                 with tab1:
@@ -606,9 +606,9 @@ def aircraft_family_analysis_page(df):
                 
                 # Additional insights section
                 st.markdown("---")
-                st.subheader("🔍 Key Findings")
+                st.subheader("Key Findings")
                 
-                with st.expander("📋 Analysis Summary"):
+                with st.expander("Analysis Summary"):
                     logical_families = family_analysis['logical_family']
                     
                     st.markdown(f"""
@@ -638,8 +638,8 @@ def aircraft_family_analysis_page(df):
                     """)
                 
             except Exception as e:
-                st.error(f"❌ Analysis failed: {str(e)}")
-                st.info("💡 Try filtering the dataset or check data quality")
+                st.error(f"Analysis failed: {str(e)}")
+                st.info("Try filtering the dataset or check data quality")
                 
                 # Debug information
                 with st.expander("🔧 Debug Information"):
@@ -772,5 +772,8 @@ def generate_family_recommendations(analysis_results):
     })
     
     return recommendations
+
+
+
 
 
