@@ -90,4 +90,3 @@ def clean_operator(df):
     df['operator'] = df['operator'].fillna('Unknown')
     return df
 
-df = clean_operator(df)
