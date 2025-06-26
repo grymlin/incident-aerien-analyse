@@ -60,9 +60,20 @@ def add_columns(df):
 def clean_operator(df):
     """
     Cleans the 'operator' column by removing ', op.for ...' and everything after it.
+    Sets empty or irregular operator values to 'Unknown'.
     """
     df = df.copy()
+    # Remove ', op.for ...'
     df['operator'] = df['operator'].str.replace(r',\s*op\.for.*$', '', regex=True)
+    # Strip whitespace
+    df['operator'] = df['operator'].str.strip()
+    # Replace empty, NaN, or irregular values with 'Unknown'
+    df['operator'] = df['operator'].replace(
+        to_replace=[r'^$', r'^\s*$', r'unknown', r'Unknown', None, pd.NA], 
+        value='Unknown', 
+        regex=True
+    )
+    df['operator'] = df['operator'].fillna('Unknown')
     return df
 
 
