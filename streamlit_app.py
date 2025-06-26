@@ -91,7 +91,7 @@ try:
     df = load_data()
     df = clean_data(df)
     df = add_columns(df)
-    df = df['operator'] = df['operator'].apply(clean_operator)
+    df = df.apply(clean_operator)
 
 except Exception as e:
     st.error(f"Error while loading or cleaning data: {e}")
