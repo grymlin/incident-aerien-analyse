@@ -1,5 +1,6 @@
 # data_processing.py
 import pandas as pd
+import re
 
 """
     Creation and modification:
@@ -87,5 +88,17 @@ def clean_operator(df):
         regex=True
     )
     df['operator'] = df['operator'].fillna('Unknown')
+    
+    def normalize_operator(op):
+        if pd.isna(op):
+            return op
+        # Remove spaces after commas
+        op = re.sub(r',\s+', ',', op)
+        # Standardize "opf", "opb", "op.for", etc. to "opf"
+        op = re.sub(r',\s*(opb|opf|op\.for|op\.by|opb\.|opf\.)\s*', ', opf ', op, flags=re.IGNORECASE)
+        return op.strip()
+
+    df['operator'] = df['operator'].apply(normalize_operator)
+
     return df
 
