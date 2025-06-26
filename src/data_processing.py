@@ -56,29 +56,28 @@ def add_columns(df):
     for col in df.select_dtypes(include=['object']):
         df[col] = df[col].str.replace('AÃ©rospatiale', 'Aérospatiale')
     return df
+
+
 def clean_operator(df):
     """
     Cleans the 'operator' column:
     - Removes ', op.for ...' and everything after it.
-    - Fixes common encoding issues.
+    - Decodes common encoding issues.
     - Strips whitespace.
     - Sets empty, whitespace-only, or 'unknown' (case-insensitive) to 'Unknown'.
     """
     df = df.copy()
     # Remove ', op.for ...'
     df['operator'] = df['operator'].str.replace(r',\s*op\.for.*$', '', regex=True)
-    # Fix common encoding issues
-    replacements = {
-        'AerotÃ©cnicos': 'Aerotécnicos',
-        'Ãgua Limpa Transportes': 'Água Limpa Transportes',
-        'Ãngel LascurÃ¡in y Osio': 'Ángel Lascuráin y Osio',
-        'Ãrzteflugambulanz': 'Ärzteflugambulanz',
-        'Ãtablissements Economique du Casino': 'Établissements Economique du Casino',
-        'ÃLAG': 'ÖLAG',
-        'privateÂ': 'private',
-        # Add more replacements as needed
-    }
-    df['operator'] = df['operator'].replace(replacements)
+    # Decode encoding issues
+    def fix_encoding(val):
+        if pd.isna(val):
+            return val
+        try:
+            return val.encode('latin1').decode('utf-8')
+        except Exception:
+            return val
+    df['operator'] = df['operator'].apply(fix_encoding)
     # Strip whitespace and non-breaking spaces
     df['operator'] = df['operator'].astype(str).str.strip().str.replace('\u00A0', '', regex=False)
     # Set empty, whitespace-only, or 'unknown' (case-insensitive) to 'Unknown'
