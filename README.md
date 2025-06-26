@@ -21,11 +21,19 @@ An interactive Streamlit dashboard for exploring and analyzing aircraft accident
 
 ## Getting Started
 
-1. Clone the repository  
-2. Install the dependencies:  
-   `pip install -r requirements.txt`  
-3. Run the app:  
-   `streamlit run streamlit_app.py`
+Clone the repository
+
+Set up your environment by running:
+
+```bash
+source setup_env.sh
+```
+
+Run the app:
+
+```bash
+streamlit run streamlit_app.py
+```
 
 ## Status
 
