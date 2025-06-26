@@ -2,7 +2,7 @@
 import streamlit as st
 from src.trends import plot_fatalities_timeline, plot_accident_categories, plot_manufacturer_safety, plot_age_impact, plot_time_heatmap
 from src.trends import get_download_section
-from src.data_processing import load_data, clean_data, clean_fatalities_data, add_columns
+from src.data_processing import clean_operator, load_data, clean_data, clean_fatalities_data, add_columns
 from src.family_safety_analysis import aircraft_family_analysis_page
 from src.geo_analysis import display_geo_analysis
 import base64
@@ -91,6 +91,8 @@ try:
     df = load_data()
     df = clean_data(df)
     df = add_columns(df)
+    df = df['operator'] = df['operator'].apply(clean_operator)
+
 except Exception as e:
     st.error(f"Error while loading or cleaning data: {e}")
     st.stop()
