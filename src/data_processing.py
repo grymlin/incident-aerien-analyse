@@ -59,15 +59,29 @@ def add_columns(df):
 
 def clean_operator(df):
     """
-    Cleans the 'operator' column by removing ', op.for ...' and everything after it.
-    Sets empty or irregular operator values to 'Unknown'.
+    Cleans the 'operator' column:
+    - Removes ', op.for ...' and everything after it.
+    - Fixes encoding issues.
+    - Strips whitespace and non-breaking spaces.
+    - Sets empty, whitespace-only, or 'unknown' (case-insensitive) to 'Unknown'.
     """
+
     df = df.copy()
     # Remove ', op.for ...'
     df['operator'] = df['operator'].str.replace(r',\s*op\.for.*$', '', regex=True)
-    # Strip whitespace
-    df['operator'] = df['operator'].str.strip()
-    # Replace empty, NaN, or irregular values with 'Unknown'
+    # Strip whitespace and non-breaking spaces
+    df['operator'] = df['operator'].astype(str).str.strip().str.replace('\u00A0', '', regex=False)
+    # Fix common encoding issues
+    replacements = {
+        'Ãgua Limpa Transportes': 'Água Limpa Transportes',
+        'Ãngel LascurÃ¡in y Osio': 'Ángel Lascuráin y Osio',
+        'Ãrzteflugambulanz': 'Ärzteflugambulanz',
+        'Ãtablissements Economique du Casino': 'Établissements Economique du Casino',
+        'ÃLAG': 'ÖLAG',
+        'privateÂ': 'private',
+    }
+    df['operator'] = df['operator'].replace(replacements)
+    # Set empty, whitespace-only, or 'unknown' (case-insensitive) to 'Unknown'
     df['operator'] = df['operator'].replace(
         to_replace=[r'^$', r'^\s*$', r'unknown', r'Unknown', None, pd.NA], 
         value='Unknown', 
