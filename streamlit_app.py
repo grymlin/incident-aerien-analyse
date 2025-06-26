@@ -90,6 +90,7 @@ st.markdown("\n\n")
 try:
     df = load_data()
     df = clean_data(df)
+    df = clean_operator(df)  
     df = add_columns(df)
 
 except Exception as e:

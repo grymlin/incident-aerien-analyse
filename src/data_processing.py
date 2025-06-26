@@ -56,14 +56,13 @@ def add_columns(df):
     for col in df.select_dtypes(include=['object']):
         df[col] = df[col].str.replace('AÃ©rospatiale', 'Aérospatiale')
     return df
-import pandas as pd
-import re 
 
-def clean_operator(op):
-    if pd.isna(op):
-        return op
-    if 'op.for' in op:
-        match = re.search(r'op\.for\s+(.+)$', op)
-        return match.group(1).strip() if match else op
-    return op.strip()
+def clean_operator(df):
+    """
+    Cleans the 'operator' column by removing ', op.for ...' and everything after it.
+    """
+    df = df.copy()
+    df['operator'] = df['operator'].str.replace(r',\s*op\.for.*$', '', regex=True)
+    return df
+
 
