@@ -150,7 +150,6 @@ tab_trends, tab_safety, tab_geo = st.tabs([
 
 with tab_trends:
     st.header("Accident Trends & Patterns")
-    st.write("Manufacturers in data:", sorted(df['manufacturer'].dropna().unique()))
     try:
         with st.expander("Filtered Dataframe"):
             st.dataframe(df_clean)
