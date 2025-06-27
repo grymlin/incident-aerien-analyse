@@ -100,7 +100,7 @@ except Exception as e:
 # Filtres avec valeurs par défaut pour certains fabricants
 try:
     st.sidebar.header("Filter Options")
-    default_manufacturers = ["A.W", "ATL"]
+    default_manufacturers = ["A.W", "ATL","ATECO","Bombardier", "Boeing"]
 
     manufacturer_filter = st.sidebar.multiselect(
         "Manufacturer",
