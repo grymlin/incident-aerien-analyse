@@ -39,6 +39,4 @@ streamlit run streamlit_app.py
 
 This project is a work in progress. More features and refinements are coming soon.
 
-## Author
-
-Rym Otsmane  
+MIT License
